@@ -1,5 +1,15 @@
 package librosystemrr.excepciones;
 
-public class CatalogoVacioException {
-    
+/**
+ * Excepción lanzada cuando se intenta realizar una operación sobre el catálogo
+ * (ordenar, listar, buscar) y este se encuentra vacío.
+ */
+public class CatalogoVacioException extends LibroSystemException {
+
+    /**
+     * Construye la excepción con un mensaje estándar.
+     */
+    public CatalogoVacioException() {
+        super("El catálogo está vacío. No hay libros registrados en el sistema.");
+    }
 }
