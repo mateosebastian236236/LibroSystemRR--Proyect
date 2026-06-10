@@ -1,0 +1,500 @@
+@startuml LibroSystemRR
+
+' ══════════════════════════════════════════
+' CONFIGURACIÓN VISUAL
+' ══════════════════════════════════════════
+skinparam backgroundColor #0d1117
+skinparam classBackgroundColor #161b22
+skinparam classBorderColor #30363d
+skinparam classHeaderBackgroundColor #21262d
+skinparam classFontColor #f0f6fc
+skinparam classAttributeFontColor #c9d1d9
+skinparam arrowColor #8b949e
+skinparam arrowThickness 1.2
+skinparam packageBackgroundColor #0d1117
+skinparam packageBorderColor #30363d
+skinparam packageFontColor #e3b341
+skinparam stereotypeCBackgroundColor #238636
+skinparam stereotypeABackgroundColor #1f6feb
+skinparam stereotypeIBackgroundColor #9e6a03
+skinparam stereotypeEBackgroundColor #da3633
+skinparam NoteBorderColor #30363d
+skinparam NoteBackgroundColor #161b22
+skinparam NoteFontColor #8b949e
+skinparam linetype ortho
+
+' ══════════════════════════════════════════
+' PAQUETE: interfaces
+' ══════════════════════════════════════════
+package "librosystemrr.interfaces" #0d1a2e {
+
+    interface Buscable {
+        + buscarPorIsbn(isbn : String) : Libro
+        + buscarPorTitulo(titulo : String) : ListaEnlazada<Libro>
+    }
+
+    interface Ordenable<T> {
+        + compareTo(otro : T) : int
+    }
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: excepciones
+' ══════════════════════════════════════════
+package "librosystemrr.excepciones" #2d1010 {
+
+    abstract class LibroSystemException {
+        - mensaje : String
+        - timestamp : Date
+        + getMensaje() : String
+        + getTimestamp() : Date
+    }
+
+    class LibroNoEncontradoException extends LibroSystemException {
+        + LibroNoEncontradoException(isbn : String)
+    }
+
+    class LibroNoDisponibleException extends LibroSystemException {
+        + LibroNoDisponibleException(isbn : String)
+    }
+
+    class UsuarioNoEncontradoException extends LibroSystemException {
+        + UsuarioNoEncontradoException(id : String)
+    }
+
+    class UsuarioConDeudaException extends LibroSystemException {
+        + UsuarioConDeudaException(id : String)
+    }
+
+    class CatalogoVacioException extends LibroSystemException {
+        + CatalogoVacioException()
+    }
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: util
+' ══════════════════════════════════════════
+package "librosystemrr.util" #1a1a0d {
+
+    class SistemaLogger <<utility>> {
+        - {static} instancia : SistemaLogger
+        - archivoLog : String
+        - {static} SistemaLogger()
+        + {static} getInstancia() : SistemaLogger
+        + registrarInfo(mensaje : String) : void
+        + registrarError(e : Exception, capa : String) : void
+        + registrarWarning(mensaje : String) : void
+    }
+
+    note right of SistemaLogger
+        Patrón Singleton
+        Transversal a todas las capas
+    end note
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: tads
+' ══════════════════════════════════════════
+package "librosystemrr.tads" #0d1f2d {
+
+    class Nodo<T> <<generic>> {
+        - dato : T
+        - siguiente : Nodo<T>
+        + Nodo(dato : T)
+        + getDato() : T
+        + getSiguiente() : Nodo<T>
+        + setDato(dato : T) : void
+        + setSiguiente(siguiente : Nodo<T>) : void
+    }
+
+    class ListaEnlazada<T> {
+        - cabeza : Nodo<T>
+        - tamanio : int
+        + ListaEnlazada()
+        + agregar(dato : T) : void
+        + agregarAlInicio(dato : T) : void
+        + eliminar(dato : T) : boolean
+        + obtener(indice : int) : T
+        + buscar(dato : T) : T
+        + getTamanio() : int
+        + estaVacia() : boolean
+        + toArray() : T[]
+    }
+
+    class Cola<T> {
+        - frente : Nodo<T>
+        - fin : Nodo<T>
+        - tamanio : int
+        + Cola()
+        + encolar(dato : T) : void
+        + desencolar() : T
+        + getFronte() : T
+        + getTamanio() : int
+        + estaVacia() : boolean
+    }
+
+    class Pila<T> {
+        - tope : Nodo<T>
+        - tamanio : int
+        + Pila()
+        + apilar(dato : T) : void
+        + desapilar() : T
+        + getTope() : T
+        + getTamanio() : int
+        + estaVacia() : boolean
+    }
+
+    note bottom of Nodo
+        Base interna de ListaEnlazada,
+        Cola y Pila. Implementación
+        propia sin librerías externas.
+    end note
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: tads.arbol
+' ══════════════════════════════════════════
+package "librosystemrr.tads.arbol" #0d2d1f {
+
+    class NodoBST {
+        - libro : Libro
+        - izquierdo : NodoBST
+        - derecho : NodoBST
+        + NodoBST(libro : Libro)
+        + getLibro() : Libro
+        + getIzquierdo() : NodoBST
+        + getDerecho() : NodoBST
+        + setIzquierdo(nodo : NodoBST) : void
+        + setDerecho(nodo : NodoBST) : void
+    }
+
+    class CatalogoBST implements Buscable {
+        - raiz : NodoBST
+        + CatalogoBST()
+        + insertar(libro : Libro) : void
+        + buscarPorIsbn(isbn : String) : Libro
+        + buscarPorTitulo(titulo : String) : ListaEnlazada<Libro>
+        + eliminar(isbn : String) : boolean
+        + inorden() : ListaEnlazada<Libro>
+        + estaVacio() : boolean
+        + getTamanio() : int
+        .. «recursive» ..
+        - insertarRec(nodo : NodoBST, libro : Libro) : NodoBST
+        - buscarRec(nodo : NodoBST, isbn : String) : Libro
+        - inordenRec(nodo : NodoBST, lista : ListaEnlazada) : void
+        - eliminarRec(nodo : NodoBST, isbn : String) : NodoBST
+    }
+
+    note right of CatalogoBST
+        Métodos privados «recursive»:
+        O(log n) promedio
+        O(n) peor caso (árbol degenerado)
+    end note
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: algoritmos
+' ══════════════════════════════════════════
+package "librosystemrr.algoritmos" #1a2d0d {
+
+    class AlgoritmosBusqueda <<utility>> {
+        .. O(n) — lista enlazada ..
+        + {static} busquedaLineal(lista : ListaEnlazada<T>, clave : T) : T
+        + {static} buscarPorTituloLineal(lista : ListaEnlazada<Libro>, titulo : String) : ListaEnlazada<Libro>
+        + {static} buscarVencidos(lista : ListaEnlazada<Prestamo>) : ListaEnlazada<Prestamo>
+        .. O(log n) — arreglo ordenado ..
+        + {static} busquedaBinaria(arr : Libro[], clave : String) : int
+        .. O(log n) prom / O(n) peor — «recursive» ..
+        + {static} buscarEnBST(raiz : NodoBST, isbn : String) : Libro
+    }
+
+    class AlgoritmosOrdenamiento <<utility>> {
+        .. O(n log n) — «recursive» estable ..
+        + {static} mergeSort(lista : ListaEnlazada<Libro>) : ListaEnlazada<Libro>
+        + {static} ordenarPorTitulo(lista : ListaEnlazada<Libro>) : ListaEnlazada<Libro>
+        + {static} ordenarPorAutor(lista : ListaEnlazada<Libro>) : ListaEnlazada<Libro>
+        + {static} ordenarPorFechaDevolucion(lista : ListaEnlazada<Prestamo>) : ListaEnlazada<Prestamo>
+        .. O(n log n) prom / O(n²) peor — in-place ..
+        + {static} quickSort(arr : Libro[], inicio : int, fin : int) : void
+        .. «recursive» — métodos privados ..
+        - {static} mergeSortRec(lista : ListaEnlazada<Libro>) : ListaEnlazada<Libro>
+        - {static} merge(izq : ListaEnlazada<Libro>, der : ListaEnlazada<Libro>) : ListaEnlazada<Libro>
+        - {static} quickSortRec(arr : Libro[], inicio : int, fin : int) : void
+        - {static} partition(arr : Libro[], inicio : int, fin : int) : int
+    }
+
+    note bottom of AlgoritmosOrdenamiento
+        mergeSort → estable, ideal para
+        ListaEnlazada<T>
+        quickSort → in-place, ideal para
+        arreglos Libro[]
+    end note
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: modelos
+' ══════════════════════════════════════════
+package "librosystemrr.modelos" #1a1a2d {
+
+    class Libro implements Ordenable {
+        - isbn : String
+        - titulo : String
+        - autor : String
+        - anioPublicacion : int
+        - disponible : boolean
+        + Libro(isbn : String, titulo : String, autor : String, anio : int)
+        + getIsbn() : String
+        + getTitulo() : String
+        + getAutor() : String
+        + isDisponible() : boolean
+        + setDisponible(disponible : boolean) : void
+        + compareTo(otro : Libro) : int
+        + toString() : String
+    }
+
+    abstract class Usuario {
+        # id : String
+        # nombre : String
+        # correo : String
+        # prestamosActivos : Cola<Prestamo>
+        # historialPrestamos : Pila<Prestamo>
+        + Usuario(id : String, nombre : String, correo : String)
+        + getId() : String
+        + getNombre() : String
+        + getCorreo() : String
+        + getPrestamosActivos() : Cola<Prestamo>
+        + getHistorialPrestamos() : Pila<Prestamo>
+        + {abstract} getTipo() : String
+        + toString() : String
+    }
+
+    class Lector extends Usuario {
+        - limitePrestamos : int
+        - {static} LIMITE_DEFAULT : int = 3
+        + Lector(id : String, nombre : String, correo : String)
+        + puedePrestar() : boolean
+        + getTipo() : String
+        + getMultasTotal() : double
+        + tieneDeudas() : boolean
+    }
+
+    class Bibliotecario extends Usuario {
+        - codigoEmpleado : String
+        + Bibliotecario(id : String, nombre : String, correo : String, codigo : String)
+        + getTipo() : String
+        + registrarLibro(libro : Libro) : void
+        + procesarDevolucion(prestamo : Prestamo) : void
+        + generarReporte() : ListaEnlazada<Prestamo>
+    }
+
+    class AyudanteBibliotecario extends Usuario {
+        - codigoEmpleado : String
+        + AyudanteBibliotecario(id : String, nombre : String, correo : String, codigo : String)
+        + getTipo() : String
+        + registrarPrestamo(usuario : Usuario, libro : Libro) : Prestamo
+        + procesarDevolucion(prestamo : Prestamo) : void
+    }
+
+    class Prestamo {
+        - id : String
+        - libro : Libro
+        - usuario : Usuario
+        - fechaPrestamo : Date
+        - fechaDevolucion : Date
+        - devuelto : boolean
+        - multa : Multa
+        + Prestamo(id : String, libro : Libro, usuario : Usuario, fechaDevolucion : Date)
+        + getId() : String
+        + getLibro() : Libro
+        + getUsuario() : Usuario
+        + getFechaDevolucion() : Date
+        + isDevuelto() : boolean
+        + isVencido() : boolean
+        + getDiasRetraso() : int
+        + devolver() : void
+        + getMulta() : Multa
+        + toString() : String
+    }
+
+    class Multa {
+        - monto : double
+        - pagada : boolean
+        - fechaPago : Date
+        - {static} MONTO_POR_DIA : double = 0.50
+        + Multa(diasRetraso : int)
+        + getMonto() : double
+        + isPagada() : boolean
+        + pagar() : void
+        + getFechaPago() : Date
+        + toString() : String
+    }
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: sistema
+' ══════════════════════════════════════════
+package "librosystemrr.sistema" #2d1a2d {
+
+    class SistemaBiblioteca {
+        - catalogo : CatalogoBST
+        - usuarios : ListaEnlazada<Usuario>
+        - prestamosActivos : ListaEnlazada<Prestamo>
+        - historialOperaciones : Pila<String>
+        - logger : SistemaLogger
+        + SistemaBiblioteca()
+        + registrarLibro(libro : Libro) : void
+        + buscarLibroPorIsbn(isbn : String) : Libro
+        + buscarLibroPorTitulo(titulo : String) : ListaEnlazada<Libro>
+        + registrarUsuario(usuario : Usuario) : void
+        + buscarUsuario(id : String) : Usuario
+        + registrarPrestamo(idUsuario : String, isbn : String) : Prestamo
+        + procesarDevolucion(idPrestamo : String) : void
+        + generarAlertas() : ListaEnlazada<Prestamo>
+        + ordenarCatalogoPorTitulo() : ListaEnlazada<Libro>
+        + ordenarCatalogoPorAutor() : ListaEnlazada<Libro>
+        + getPrestamosActivos() : ListaEnlazada<Prestamo>
+        - cargarDatosDePrueba() : void
+    }
+}
+
+' ══════════════════════════════════════════
+' PAQUETE: ui
+' ══════════════════════════════════════════
+package "librosystemrr.ui" #1a2d2d {
+
+    class VentanaPrincipal <<JFrame>> {
+        - sistema : SistemaBiblioteca
+        - panelCatalogo : PanelCatalogo
+        - panelPrestamos : PanelPrestamos
+        - panelUsuarios : PanelUsuarios
+        - panelAlertas : PanelAlertas
+        + VentanaPrincipal()
+        + iniciar() : void
+        - inicializarComponentes() : void
+        - configurarVentana() : void
+    }
+
+    package "librosystemrr.ui.paneles" #162424 {
+
+        class PanelCatalogo <<JPanel>> {
+            - sistema : SistemaBiblioteca
+            + PanelCatalogo(sistema : SistemaBiblioteca)
+            + actualizarTabla() : void
+            - buscarLibro() : void
+            - ordenarCatalogo() : void
+        }
+
+        class PanelPrestamos <<JPanel>> {
+            - sistema : SistemaBiblioteca
+            + PanelPrestamos(sistema : SistemaBiblioteca)
+            + actualizarTabla() : void
+            - registrarPrestamo() : void
+            - procesarDevolucion() : void
+        }
+
+        class PanelUsuarios <<JPanel>> {
+            - sistema : SistemaBiblioteca
+            + PanelUsuarios(sistema : SistemaBiblioteca)
+            + actualizarTabla() : void
+            - registrarUsuario() : void
+        }
+
+        class PanelAlertas <<JPanel>> {
+            - sistema : SistemaBiblioteca
+            + PanelAlertas(sistema : SistemaBiblioteca)
+            + actualizarAlertas() : void
+            - procesarPagoMulta() : void
+        }
+    }
+
+    package "librosystemrr.ui.dialogos" #162424 {
+
+        class DialogoLibro <<JDialog>> {
+            - libro : Libro
+            + DialogoLibro(parent : JFrame, libro : Libro)
+            + getLibro() : Libro
+            - guardar() : void
+            - validarCampos() : boolean
+        }
+
+        class DialogoUsuario <<JDialog>> {
+            - usuario : Usuario
+            + DialogoUsuario(parent : JFrame, usuario : Usuario)
+            + getUsuario() : Usuario
+            - guardar() : void
+            - validarCampos() : boolean
+        }
+
+        class DialogoPrestamo <<JDialog>> {
+            - prestamo : Prestamo
+            + DialogoPrestamo(parent : JFrame)
+            + getPrestamo() : Prestamo
+            - guardar() : void
+            - validarCampos() : boolean
+        }
+    }
+}
+
+' ══════════════════════════════════════════
+' RELACIONES — TADs internos
+' ══════════════════════════════════════════
+ListaEnlazada o-- Nodo : usa internamente
+Cola o-- Nodo : usa internamente
+Pila o-- Nodo : usa internamente
+CatalogoBST o-- NodoBST : usa internamente
+
+' ══════════════════════════════════════════
+' RELACIONES — Modelos
+' ══════════════════════════════════════════
+Prestamo *-- Multa : compone
+Prestamo --> Libro : referencia
+Prestamo --> Usuario : referencia
+Usuario o-- "Cola<Prestamo>" : prestamosActivos
+Usuario o-- "Pila<Prestamo>" : historialPrestamos
+
+' ══════════════════════════════════════════
+' RELACIONES — Sistema con TADs y Algoritmos
+' ══════════════════════════════════════════
+SistemaBiblioteca *-- CatalogoBST : compone
+SistemaBiblioteca o-- "ListaEnlazada<Usuario>" : usuarios
+SistemaBiblioteca o-- "ListaEnlazada<Prestamo>" : prestamosActivos
+SistemaBiblioteca o-- "Pila<String>" : historialOperaciones
+SistemaBiblioteca ..> AlgoritmosBusqueda : <<usa>>
+SistemaBiblioteca ..> AlgoritmosOrdenamiento : <<usa>>
+SistemaBiblioteca --> SistemaLogger : <<usa>>
+
+' ══════════════════════════════════════════
+' RELACIONES — UI con Sistema
+' ══════════════════════════════════════════
+VentanaPrincipal --> SistemaBiblioteca : <<usa>>
+PanelCatalogo --> SistemaBiblioteca : <<usa>>
+PanelPrestamos --> SistemaBiblioteca : <<usa>>
+PanelUsuarios --> SistemaBiblioteca : <<usa>>
+PanelAlertas --> SistemaBiblioteca : <<usa>>
+VentanaPrincipal *-- PanelCatalogo
+VentanaPrincipal *-- PanelPrestamos
+VentanaPrincipal *-- PanelUsuarios
+VentanaPrincipal *-- PanelAlertas
+DialogoLibro ..> Libro : <<crea>>
+DialogoUsuario ..> Usuario : <<crea>>
+DialogoPrestamo ..> Prestamo : <<crea>>
+
+' ══════════════════════════════════════════
+' NOTA GLOBAL
+' ══════════════════════════════════════════
+note as NotaGeneral
+    <b>LibroSystemRR</b> — Buenas Prácticas Aplicadas
+    ──────────────────────────────────────
+    • PascalCase en clases
+    • camelCase en métodos y variables
+    • UPPER_SNAKE_CASE en constantes
+    • Paquetes en minúsculas
+    • Una clase pública por archivo
+    • Principio de Responsabilidad Única (SRP)
+    • Arquitectura N-Capas
+    • Patrón Singleton en SistemaLogger
+    • Métodos «recursive» explícitos
+    • Implementación propia sin librerías
+end note
+
+@enduml
