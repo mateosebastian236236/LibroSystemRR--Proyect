@@ -226,7 +226,8 @@ public class CatalogoBST implements Buscable {
         }
         return nodo;
     }
-
+    /** @return Raíz del árbol BST (uso interno para AlgoritmosBusqueda). */
+    public NodoBST getRaiz() { return raiz; }
     /**
      * Retorna el nodo con el ISBN mínimo en el subárbol dado (el más a la izquierda). O(h).
      *
