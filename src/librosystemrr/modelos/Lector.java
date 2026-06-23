@@ -1,289 +1,94 @@
-package librosystemrr.sistema;
-
-import librosystemrr.algoritmos.AlgoritmosBusqueda;
-import librosystemrr.algoritmos.AlgoritmosOrdenamiento;
-import librosystemrr.excepciones.CatalogoVacioException;
-import librosystemrr.excepciones.LibroNoDisponibleException;
-import librosystemrr.excepciones.LibroNoEncontradoException;
-import librosystemrr.excepciones.UsuarioConDeudaException;
-import librosystemrr.excepciones.UsuarioNoEncontradoException;
-import librosystemrr.modelos.Libro;
-import librosystemrr.modelos.Lector;
-import librosystemrr.modelos.Prestamo;
-import librosystemrr.modelos.Usuario;
-import librosystemrr.tads.Cola;
-import librosystemrr.tads.ListaEnlazada;
-import librosystemrr.tads.arbol.CatalogoBST;
-import librosystemrr.util.SistemaLogger;
+package librosystemrr.modelos;
 
 /**
- * Capa de negocio central del sistema LibroSystemRR.
- * Coordina TADs, algoritmos y modelos. La UI solo interactúa con esta clase.
+ * Representa a un lector de la biblioteca. Extiende {@link Usuario} y agrega
+ * las validaciones de negocio propias de un usuario que puede solicitar préstamos.
  *
- * <p>Principio SRP: esta clase es la única responsable de orquestar las
- * operaciones del sistema. No conoce la existencia de la UI.</p>
- *
- * <p>Principio DIP: depende de las abstracciones {@code Buscable} y {@code Ordenable},
- * no de implementaciones concretas de librerías externas.</p>
+ * <p>Un lector no puede tener más de {@link #LIMITE_PRESTAMOS} préstamos activos
+ * ni puede solicitar nuevos préstamos si tiene deudas pendientes.</p>
  */
-public class SistemaBiblioteca {
+public class Lector extends Usuario {
 
-    /** Catálogo de libros organizado en BST (búsqueda O(log n) por ISBN). */
-    private CatalogoBST catalogo;
-
-    /** Lista de todos los usuarios registrados (búsqueda lineal O(n) por ID). */
-    private ListaEnlazada<Usuario> usuarios;
-
-    /** Lista de todos los préstamos registrados en el sistema. */
-    private ListaEnlazada<Prestamo> prestamos;
-
-    /** Logger singleton para registrar operaciones del sistema. */
-    private SistemaLogger logger;
-
-    /** Contador para generar IDs únicos de préstamo. */
-    private int contadorPrestamos;
+    /** Máximo de préstamos activos permitidos para un lector. */
+    public static final int LIMITE_PRESTAMOS = 3;
 
     /**
-     * Construye el sistema de biblioteca con todas las estructuras vacías.
+     * Construye un lector con su ID y nombre.
+     *
+     * @param id     Identificador único del lector.
+     * @param nombre Nombre completo del lector.
      */
-    public SistemaBiblioteca() {
-        this.catalogo = new CatalogoBST();
-        this.usuarios = new ListaEnlazada<>();
-        this.prestamos = new ListaEnlazada<>();
-        this.logger = SistemaLogger.getInstancia();
-        this.contadorPrestamos = 1;
+    public Lector(String id, String nombre) {
+        super(id, nombre);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // MÓDULO DE CATÁLOGO
-    // ══════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════
+    // Template Method
+    // ══════════════════════════════════════════
 
     /**
-     * Registra un libro en el catálogo (lo inserta en el BST). O(log n) prom.
+     * Retorna el tipo de usuario.
      *
-     * @param libro Libro a registrar. No debe ser {@code null}.
+     * @return La cadena "LECTOR".
      */
-    public void registrarLibro(Libro libro) {
-        catalogo.insertar(libro);
-        logger.registrarInfo("Libro registrado: " + libro.getIsbn() + " — " + libro.getTitulo());
+    @Override
+    public String getTipo() {
+        return "LECTOR";
+    }
+
+    // ══════════════════════════════════════════
+    // MÉTODOS DE NEGOCIO
+    // ══════════════════════════════════════════
+
+    /**
+     * Indica si el lector puede solicitar un nuevo préstamo.
+     * Condición: préstamos activos menores al límite permitido.
+     *
+     * @return {@code true} si puede solicitar préstamos.
+     */
+    public boolean puedePrestar() {
+        return getPrestamosActivos().getTamanio() < LIMITE_PRESTAMOS;
     }
 
     /**
-     * Busca un libro por ISBN usando el BST. O(log n) prom.
+     * Indica si el lector tiene deudas pendientes (multas sin pagar).
+     * Recorre la cola de préstamos activos buscando multas no pagadas.
      *
-     * @param isbn ISBN exacto del libro.
-     * @return El {@link Libro} encontrado.
-     * @throws LibroNoEncontradoException si el ISBN no existe en el catálogo.
+     * @return {@code true} si tiene al menos una multa sin pagar.
      */
-    public Libro buscarLibroPorIsbn(String isbn) {
-        Libro resultado = AlgoritmosBusqueda.buscarEnBST(catalogo.getRaiz(), isbn);
-        if (resultado == null) {
-            throw new LibroNoEncontradoException(isbn);
+    /**
+     * Indica si el lector tiene multas pendientes sin pagar.
+     * Recorre el historial de préstamos usando toArray() para no destruir la Pila.
+     *
+     * @return {@code true} si tiene al menos una multa sin pagar.
+     */
+    public boolean tieneDeudas() {
+        // Usamos toArray() del historial (via getCabeza) para no destruir la Pila
+        int total = getHistorialPrestamos().getTamanio();
+        if (total == 0) return false;
+
+        // Recorrer la pila sin destruirla usando toArray de la ListaEnlazada interna
+        // La Pila expone getTope() pero no tiene iterador — usamos un arreglo auxiliar
+        Prestamo[] temporal = new Prestamo[total];
+        for (int i = 0; i < total; i++) {
+            temporal[i] = getHistorialPrestamos().desapilar();
         }
-        return resultado;
-    }
-
-    /**
-     * Busca libros cuyo título contenga la cadena indicada. O(n).
-     *
-     * @param titulo Fragmento del título a buscar.
-     * @return Lista de libros que coinciden (puede estar vacía).
-     * @throws CatalogoVacioException si el catálogo está vacío.
-     */
-    public ListaEnlazada<Libro> buscarLibroPorTitulo(String titulo) {
-        return catalogo.buscarPorTitulo(titulo);
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // MÓDULO DE USUARIOS
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Registra un usuario en el sistema. O(1) al inicio de la lista.
-     *
-     * @param usuario Usuario a registrar.
-     */
-    public void registrarUsuario(Usuario usuario) {
-        usuarios.agregar(usuario);
-        logger.registrarInfo("Usuario registrado: " + usuario.getId() + " — " + usuario.getNombre());
-    }
-
-    /**
-     * Busca un usuario por ID usando búsqueda lineal. O(n).
-     *
-     * @param id Identificador del usuario.
-     * @return El {@link Usuario} encontrado.
-     * @throws UsuarioNoEncontradoException si el ID no existe.
-     */
-    public Usuario buscarUsuario(String id) {
-        return AlgoritmosBusqueda.busquedaLinealUsuario(usuarios, id);
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // MÓDULO DE PRÉSTAMOS
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Registra un préstamo con todas las validaciones de negocio.
-     * Valida: libro disponible, usuario tipo Lector, no excede límite, no tiene deudas.
-     *
-     * @param idUsuario ID del usuario que solicita el préstamo.
-     * @param isbn      ISBN del libro a prestar.
-     * @return El {@link Prestamo} creado.
-     * @throws UsuarioNoEncontradoException si el ID de usuario no existe.
-     * @throws LibroNoEncontradoException   si el ISBN no existe en el catálogo.
-     * @throws LibroNoDisponibleException   si el libro ya está prestado.
-     * @throws UsuarioConDeudaException     si el lector tiene deudas pendientes.
-     * @throws IllegalStateException        si el lector superó el límite de préstamos.
-     */
-    public Prestamo registrarPrestamo(String idUsuario, String isbn) {
-        // 1. Buscar usuario y libro
-        Usuario usuario = buscarUsuario(idUsuario);
-        Libro libro = buscarLibroPorIsbn(isbn);
-
-        // 2. Validar disponibilidad del libro
-        if (!libro.isDisponible()) {
-            throw new LibroNoDisponibleException(isbn);
-        }
-
-        // 3. Validaciones específicas de Lector
-        if (usuario instanceof Lector) {
-            Lector lector = (Lector) usuario;
-
-            if (!lector.puedePrestar()) {
-                throw new IllegalStateException(
-                        "El lector " + idUsuario + " ya tiene " + Lector.LIMITE_PRESTAMOS +
-                                " préstamos activos. No puede solicitar más.");
+        boolean tieneDeuda = false;
+        // Restaurar la pila en el mismo orden (apilar al revés)
+        for (int i = total - 1; i >= 0; i--) {
+            if (temporal[i].getMulta() != null && !temporal[i].getMulta().isPagada()) {
+                tieneDeuda = true;
             }
-
-            if (lector.tieneDeudas()) {
-                throw new UsuarioConDeudaException(idUsuario);
-            }
+            getHistorialPrestamos().apilar(temporal[i]);
         }
-
-        // 4. Crear préstamo, actualizar libro y registrar en estructuras
-        String idPrestamo = "P" + String.format("%04d", contadorPrestamos++);
-        Prestamo prestamo = new Prestamo(idPrestamo, libro, usuario);
-
-        libro.setDisponible(false);
-        usuario.getPrestamosActivos().encolar(prestamo);
-        usuario.getHistorialPrestamos().apilar(prestamo);
-        prestamos.agregar(prestamo);
-
-        logger.registrarInfo("Préstamo registrado: " + idPrestamo +
-                " | Usuario: " + idUsuario + " | Libro: " + isbn);
-        return prestamo;
+        return tieneDeuda;
     }
 
-    /**
-     * Procesa la devolución de un préstamo. Genera multa automáticamente si hay retraso.
-     *
-     * @param idPrestamo ID del préstamo a devolver.
-     * @return El {@link Prestamo} procesado (con multa si aplica).
-     * @throws LibroNoEncontradoException si el ID de préstamo no existe.
-     */
-    public Prestamo procesarDevolucion(String idPrestamo) {
-        // Buscar el préstamo en la lista general
-        Prestamo prestamoEncontrado = null;
-        for (int i = 0; i < prestamos.getTamanio(); i++) {
-            Prestamo p = prestamos.obtener(i);
-            if (p.getId().equals(idPrestamo) && !p.isDevuelto()) {
-                prestamoEncontrado = p;
-                break;
-            }
-        }
-
-        if (prestamoEncontrado == null) {
-            throw new LibroNoEncontradoException("Préstamo no encontrado o ya devuelto: " + idPrestamo);
-        }
-
-        // Procesar la devolución (actualiza disponibilidad y genera multa si aplica)
-        prestamoEncontrado.devolver();
-
-        // Remover el préstamo de la cola de activos del usuario:
-        // Como Cola<T> solo tiene desencolar (FIFO) sin acceso por ID,
-        // vaciamos la cola y re-encolamos los préstamos que NO sean el devuelto.
-        Cola<Prestamo> colaActual = prestamoEncontrado.getUsuario().getPrestamosActivos();
-        int totalEnCola = colaActual.getTamanio();
-        Prestamo[] temporal = new Prestamo[totalEnCola];
-        for (int i = 0; i < totalEnCola; i++) {
-            temporal[i] = colaActual.desencolar();
-        }
-        for (int i = 0; i < totalEnCola; i++) {
-            if (!temporal[i].getId().equals(idPrestamo)) {
-                colaActual.encolar(temporal[i]);
-            }
-        }
-
-        if (prestamoEncontrado.getMulta() != null) {
-            logger.registrarWarning("Devolución con retraso. Multa generada: $" +
-                    String.format("%.2f", prestamoEncontrado.getMulta().getMonto()) +
-                    " | Préstamo: " + idPrestamo);
-        } else {
-            logger.registrarInfo("Devolución exitosa sin retraso. Préstamo: " + idPrestamo);
-        }
-
-        return prestamoEncontrado;
+    @Override
+    public String toString() {
+        return "Lector{id='" + getId() + "', nombre='" + getNombre() +
+                "', prestamosActivos=" + getPrestamosActivos().getTamanio() +
+                "/" + LIMITE_PRESTAMOS +
+                ", tieneDeudas=" + tieneDeudas() + "}";
     }
-
-    // ══════════════════════════════════════════════════════════════
-    // MÓDULO DE ALERTAS Y ORDENAMIENTO
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Genera una lista de todos los préstamos vencidos activos en el sistema. O(n).
-     *
-     * @return {@link ListaEnlazada} con los préstamos vencidos (puede estar vacía).
-     */
-    public ListaEnlazada<Prestamo> generarAlertas() {
-        ListaEnlazada<Prestamo> vencidos = new ListaEnlazada<>();
-        for (int i = 0; i < prestamos.getTamanio(); i++) {
-            Prestamo p = prestamos.obtener(i);
-            if (p.isVencido()) {
-                vencidos.agregar(p);
-                logger.registrarWarning("Préstamo vencido detectado: " + p.getId() +
-                        " | Días retraso: " + p.getDiasRetraso());
-            }
-        }
-        return vencidos;
-    }
-
-    /**
-     * Ordena el catálogo de libros por título usando MergeSort. O(n log n).
-     *
-     * @return {@link ListaEnlazada} con todos los libros ordenados por título.
-     * @throws CatalogoVacioException si el catálogo está vacío.
-     */
-    public ListaEnlazada<Libro> ordenarCatalogoPorTitulo() {
-        ListaEnlazada<Libro> lista = catalogo.inorden(); // obtiene todos los libros
-        AlgoritmosOrdenamiento.ordenarPorTitulo(lista);
-        logger.registrarInfo("Catálogo ordenado por título.");
-        return lista;
-    }
-
-    /**
-     * Ordena el catálogo de libros por autor usando MergeSort. O(n log n).
-     *
-     * @return {@link ListaEnlazada} con todos los libros ordenados por autor.
-     * @throws CatalogoVacioException si el catálogo está vacío.
-     */
-    public ListaEnlazada<Libro> ordenarCatalogoPorAutor() {
-        ListaEnlazada<Libro> lista = catalogo.inorden();
-        AlgoritmosOrdenamiento.ordenarPorAutor(lista);
-        logger.registrarInfo("Catálogo ordenado por autor.");
-        return lista;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // GETTERS (para uso interno y pruebas)
-    // ══════════════════════════════════════════════════════════════
-
-    /** @return El catálogo BST del sistema. */
-    public CatalogoBST getCatalogo() { return catalogo; }
-
-    /** @return Lista de todos los usuarios registrados. */
-    public ListaEnlazada<Usuario> getUsuarios() { return usuarios; }
-
-    /** @return Lista de todos los préstamos registrados. */
-    public ListaEnlazada<Prestamo> getPrestamos() { return prestamos; }
 }
