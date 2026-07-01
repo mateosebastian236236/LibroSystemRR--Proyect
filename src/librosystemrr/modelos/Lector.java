@@ -51,14 +51,8 @@ public class Lector extends Usuario {
     }
 
     /**
-     * Indica si el lector tiene deudas pendientes (multas sin pagar).
-     * Recorre la cola de préstamos activos buscando multas no pagadas.
-     *
-     * @return {@code true} si tiene al menos una multa sin pagar.
-     */
-    /**
      * Indica si el lector tiene multas pendientes sin pagar.
-     * Recorre el historial de préstamos usando toArray() para no destruir la Pila.
+     * Recorre el historial de préstamos sin destruir la Pila (usando arreglo auxiliar).
      *
      * @return {@code true} si tiene al menos una multa sin pagar.
      */

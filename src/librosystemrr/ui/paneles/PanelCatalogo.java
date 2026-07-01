@@ -102,6 +102,7 @@ public class PanelCatalogo extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
 
         JButton btnNuevo        = new JButton("+ Nuevo libro");
+        JButton btnEliminar     = new JButton("🗑 Eliminar libro");
         JButton btnOrdenarTit   = new JButton("Ordenar por título");
         JButton btnOrdenarAut   = new JButton("Ordenar por autor");
         JButton btnRefrescar    = new JButton("⟳ Refrescar");
@@ -109,13 +110,18 @@ public class PanelCatalogo extends JPanel {
         btnNuevo.setBackground(new Color(30, 58, 95));
         btnNuevo.setForeground(Color.WHITE);
         btnNuevo.setFocusPainted(false);
+        btnEliminar.setBackground(new Color(160, 40, 40));
+        btnEliminar.setForeground(Color.WHITE);
+        btnEliminar.setFocusPainted(false);
 
         btnNuevo.addActionListener(e -> abrirDialogoNuevoLibro());
+        btnEliminar.addActionListener(e -> eliminarLibroSeleccionado());
         btnOrdenarTit.addActionListener(e -> ordenarPorTitulo());
         btnOrdenarAut.addActionListener(e -> ordenarPorAutor());
         btnRefrescar.addActionListener(e -> refrescar());
 
         panel.add(btnNuevo);
+        panel.add(btnEliminar);
         panel.add(new JSeparator(SwingConstants.VERTICAL));
         panel.add(btnOrdenarTit);
         panel.add(btnOrdenarAut);
@@ -185,6 +191,36 @@ public class PanelCatalogo extends JPanel {
             lblResultados.setText("Catálogo ordenado por autor (MergeSort).");
         } catch (LibroSystemException ex) {
             lblResultados.setText(ex.getMensaje());
+        }
+    }
+
+    private void eliminarLibroSeleccionado() {
+        int fila = tablaLibros.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Selecciona un libro en la tabla para eliminarlo.",
+                    "Sin selección", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        String isbn = (String) modeloTabla.getValueAt(fila, 0);
+        String titulo = (String) modeloTabla.getValueAt(fila, 1);
+        String disponible = (String) modeloTabla.getValueAt(fila, 4);
+
+        if (disponible.contains("No")) {
+            JOptionPane.showMessageDialog(this,
+                    "No se puede eliminar \"" + titulo + "\" porque está actualmente prestado.",
+                    "Libro no disponible", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirmacion = JOptionPane.showConfirmDialog(this,
+                "¿Eliminar el libro \"" + titulo + "\" (ISBN: " + isbn + ")?",
+                "Confirmar eliminación", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        if (confirmacion == JOptionPane.YES_OPTION) {
+            sistema.getCatalogo().eliminar(isbn);
+            refrescar();
+            lblResultados.setText("Libro \"" + titulo + "\" eliminado del catálogo.");
         }
     }
 

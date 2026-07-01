@@ -5,6 +5,7 @@ import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.ui.VentanaPrincipal;
 
 import javax.swing.*;
+import java.util.Date;
 
 /**
  * Punto de entrada del sistema LibroSystemRR.
@@ -58,10 +59,20 @@ public class Main {
         sistema.registrarUsuario(new Bibliotecario("B001", "María López", "EMP-2024-01"));
         sistema.registrarUsuario(new AyudanteBibliotecario("A001", "Luis Paredes", "EMP-2024-02"));
 
+        // Usuario extra para el préstamo vencido
+        sistema.registrarUsuario(new Lector("L003", "Pedro Alvarado"));
+
         // ── Préstamos de prueba ──
         try {
             sistema.registrarPrestamo("L001", "978-0-13-110362-7"); // Ana toma "The C Programming Language"
             sistema.registrarPrestamo("L002", "978-0-201-63361-0"); // Carlos toma "Design Patterns"
+
+            // Préstamo vencido para demostrar el panel de Alertas en la defensa
+            Prestamo prestamoVencido = sistema.registrarPrestamo("L003", "978-0-13-468599-1");
+            // Retroceder la fecha de devolución 20 días para simular vencimiento
+            long veinteDias = 20L * 24 * 60 * 60 * 1000;
+            prestamoVencido.setFechaDevolucion(new Date(System.currentTimeMillis() - veinteDias));
+
         } catch (Exception e) {
             System.err.println("Error al cargar préstamos de prueba: " + e.getMessage());
         }

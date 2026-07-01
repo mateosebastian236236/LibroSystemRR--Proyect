@@ -11,6 +11,7 @@ import librosystemrr.modelos.Libro;
 import librosystemrr.modelos.Lector;
 import librosystemrr.modelos.Prestamo;
 import librosystemrr.modelos.Usuario;
+import librosystemrr.tads.Cola;
 import librosystemrr.tads.ListaEnlazada;
 import librosystemrr.tads.arbol.CatalogoBST;
 import librosystemrr.util.SistemaLogger;
@@ -199,8 +200,20 @@ public class SistemaBiblioteca {
         // Procesar la devolución (actualiza disponibilidad y genera multa si aplica)
         prestamoEncontrado.devolver();
 
-        // Desencolar de prestamosActivos del usuario
-        prestamoEncontrado.getUsuario().getPrestamosActivos().desencolar();
+        // Remover el préstamo específico de la cola de activos del usuario.
+        // Como Cola<T> es FIFO sin acceso por ID, vaciamos y re-encolamos
+        // solo los préstamos que NO sean el devuelto.
+        Cola<Prestamo> colaActual = prestamoEncontrado.getUsuario().getPrestamosActivos();
+        int totalEnCola = colaActual.getTamanio();
+        Prestamo[] temporal = new Prestamo[totalEnCola];
+        for (int i = 0; i < totalEnCola; i++) {
+            temporal[i] = colaActual.desencolar();
+        }
+        for (int i = 0; i < totalEnCola; i++) {
+            if (!temporal[i].getId().equals(idPrestamo)) {
+                colaActual.encolar(temporal[i]);
+            }
+        }
 
         if (prestamoEncontrado.getMulta() != null) {
             logger.registrarWarning("Devolución con retraso. Multa generada: $" +

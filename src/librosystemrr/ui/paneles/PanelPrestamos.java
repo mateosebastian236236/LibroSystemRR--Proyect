@@ -89,6 +89,7 @@ public class PanelPrestamos extends JPanel {
 
         JButton btnNuevo     = new JButton("+ Nuevo préstamo");
         JButton btnDevolver  = new JButton("✔ Registrar devolución");
+        JButton btnPagarMulta = new JButton("💲 Pagar multa");
         JButton btnRefrescar = new JButton("⟳ Refrescar");
 
         btnNuevo.setBackground(new Color(30, 58, 95));
@@ -97,13 +98,18 @@ public class PanelPrestamos extends JPanel {
         btnDevolver.setBackground(new Color(40, 100, 60));
         btnDevolver.setForeground(Color.WHITE);
         btnDevolver.setFocusPainted(false);
+        btnPagarMulta.setBackground(new Color(140, 80, 20));
+        btnPagarMulta.setForeground(Color.WHITE);
+        btnPagarMulta.setFocusPainted(false);
 
         btnNuevo.addActionListener(e -> abrirDialogoNuevoPrestamo());
         btnDevolver.addActionListener(e -> procesarDevolucion());
+        btnPagarMulta.addActionListener(e -> pagarMultaSeleccionada());
         btnRefrescar.addActionListener(e -> refrescar());
 
         panel.add(btnNuevo);
         panel.add(btnDevolver);
+        panel.add(btnPagarMulta);
         panel.add(new JSeparator(SwingConstants.VERTICAL));
         panel.add(btnRefrescar);
         return panel;
@@ -150,6 +156,45 @@ public class PanelPrestamos extends JPanel {
             });
         }
         lblResumen.setText("Total: " + prestamos.getTamanio() + " préstamos | Activos: " + activos);
+    }
+
+    private void pagarMultaSeleccionada() {
+        int fila = tablaPrestamos.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Selecciona un préstamo en la tabla para pagar su multa.",
+                    "Sin selección", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String idPrestamo = (String) modeloTabla.getValueAt(fila, 0);
+        String multaTexto = (String) modeloTabla.getValueAt(fila, 6);
+
+        if (multaTexto.equals("-")) {
+            JOptionPane.showMessageDialog(this,
+                    "Este préstamo no tiene multa asociada.",
+                    "Sin multa", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        if (multaTexto.contains("✔")) {
+            JOptionPane.showMessageDialog(this,
+                    "La multa de este préstamo ya fue pagada.",
+                    "Multa pagada", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // Buscar el préstamo en el sistema y pagar la multa
+        for (int i = 0; i < sistema.getPrestamos().getTamanio(); i++) {
+            librosystemrr.modelos.Prestamo p = sistema.getPrestamos().obtener(i);
+            if (p.getId().equals(idPrestamo) && p.getMulta() != null && !p.getMulta().isPagada()) {
+                p.getMulta().pagar();
+                JOptionPane.showMessageDialog(this,
+                        "Multa de $" + String.format("%.2f", p.getMulta().getMonto()) + " pagada exitosamente.",
+                        "Pago registrado", JOptionPane.INFORMATION_MESSAGE);
+                refrescar();
+                return;
+            }
+        }
     }
 
     private void abrirDialogoNuevoPrestamo() {

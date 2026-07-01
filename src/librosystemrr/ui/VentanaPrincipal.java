@@ -25,6 +25,9 @@ public class VentanaPrincipal extends JFrame {
     /** Panel de pestañas principal. */
     private JTabbedPane tabbedPane;
 
+    /** Etiqueta de la barra de estado (se actualiza al cambiar de pestaña). */
+    private JLabel lblEstado;
+
     // Paneles del sistema
     private PanelCatalogo panelCatalogo;
     private PanelPrestamos panelPrestamos;
@@ -88,8 +91,11 @@ public class VentanaPrincipal extends JFrame {
         tabbedPane.addTab("👤 Usuarios",   panelUsuarios);
         tabbedPane.addTab("⚠️ Alertas",    panelAlertas);
 
-        // Al cambiar de pestaña, refrescar el panel activo
-        tabbedPane.addChangeListener(e -> refrescarPanelActivo());
+        // Al cambiar de pestaña, refrescar el panel activo y la barra de estado
+        tabbedPane.addChangeListener(e -> {
+            refrescarPanelActivo();
+            actualizarBarraEstado();
+        });
 
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -135,16 +141,25 @@ public class VentanaPrincipal extends JFrame {
         panel.setBackground(new Color(240, 240, 240));
         panel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
 
-        JLabel info = new JLabel(
-                "Libros: " + sistema.getCatalogo().getTamanio() +
-                        "   |   Usuarios: " + sistema.getUsuarios().getTamanio() +
-                        "   |   Préstamos: " + sistema.getPrestamos().getTamanio()
-        );
-        info.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        info.setForeground(Color.DARK_GRAY);
+        lblEstado = new JLabel(textoEstado());
+        lblEstado.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lblEstado.setForeground(Color.DARK_GRAY);
 
-        panel.add(info);
+        panel.add(lblEstado);
         return panel;
+    }
+
+    /** Actualiza el texto de la barra de estado con los contadores actuales. */
+    private void actualizarBarraEstado() {
+        if (lblEstado != null) {
+            lblEstado.setText(textoEstado());
+        }
+    }
+
+    private String textoEstado() {
+        return "Libros: " + sistema.getCatalogo().getTamanio() +
+                "   |   Usuarios: " + sistema.getUsuarios().getTamanio() +
+                "   |   Préstamos: " + sistema.getPrestamos().getTamanio();
     }
 
     /**
