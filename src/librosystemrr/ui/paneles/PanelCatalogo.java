@@ -14,6 +14,7 @@ import java.awt.*;
  * Panel Swing para la gestión del catálogo de libros.
  * Permite buscar, listar y registrar libros, y ordenar el catálogo.
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class PanelCatalogo extends JPanel {
 
     private final SistemaBiblioteca sistema;

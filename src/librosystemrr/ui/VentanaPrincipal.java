@@ -17,6 +17,7 @@ import java.awt.*;
  * <p>Principio de arquitectura: esta clase solo llama a {@link SistemaBiblioteca}.
  * Nunca accede directamente a TADs ni a modelos desde aquí.</p>
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class VentanaPrincipal extends JFrame {
 
     /** Sistema de biblioteca (capa de negocio). */

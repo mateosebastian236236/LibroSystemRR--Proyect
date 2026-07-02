@@ -4,6 +4,7 @@ package librosystemrr.excepciones;
  * Excepción lanzada cuando se busca un libro por ISBN o título y no existe en el catálogo.
  * Se lanza desde {@code CatalogoBST} y {@code SistemaBiblioteca} en lugar de retornar {@code null}.
  */
+@SuppressWarnings("serial")
 public class LibroNoEncontradoException extends LibroSystemException {
 
     /**

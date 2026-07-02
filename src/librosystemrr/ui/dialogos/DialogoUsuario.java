@@ -16,6 +16,7 @@ import java.awt.*;
  * <p>Aplica patrón Factory Method: crea la instancia correcta de usuario
  * según el tipo seleccionado.</p>
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class DialogoUsuario extends JDialog {
 
     private final SistemaBiblioteca sistema;

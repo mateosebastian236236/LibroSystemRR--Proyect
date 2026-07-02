@@ -17,6 +17,7 @@ import java.awt.*;
  *
  * <p>Solo interactúa con la capa de negocio a través de {@link SistemaBiblioteca}.</p>
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class PanelUsuarios extends JPanel {
 
     private final SistemaBiblioteca sistema;

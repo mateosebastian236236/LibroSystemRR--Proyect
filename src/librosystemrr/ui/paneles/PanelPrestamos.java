@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
  * Panel Swing para el módulo de préstamos.
  * Permite registrar nuevos préstamos y procesar devoluciones.
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class PanelPrestamos extends JPanel {
 
     private final SistemaBiblioteca sistema;

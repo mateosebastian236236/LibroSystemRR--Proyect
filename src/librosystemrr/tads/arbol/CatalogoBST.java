@@ -128,6 +128,16 @@ public class CatalogoBST implements Buscable {
         return tamanio;
     }
 
+    /**
+     * Retorna la raíz del árbol BST.
+     * Uso interno para {@link librosystemrr.algoritmos.AlgoritmosBusqueda#buscarEnBST}.
+     *
+     * @return Nodo raíz del árbol, o {@code null} si el catálogo está vacío.
+     */
+    public NodoBST getRaiz() {
+        return raiz;
+    }
+
     // ══════════════════════════════════════════
     // MÉTODOS PRIVADOS «recursive»
     // ══════════════════════════════════════════
@@ -226,8 +236,6 @@ public class CatalogoBST implements Buscable {
         }
         return nodo;
     }
-    /** @return Raíz del árbol BST (uso interno para AlgoritmosBusqueda). */
-    public NodoBST getRaiz() { return raiz; }
     /**
      * Retorna el nodo con el ISBN mínimo en el subárbol dado (el más a la izquierda). O(h).
      *

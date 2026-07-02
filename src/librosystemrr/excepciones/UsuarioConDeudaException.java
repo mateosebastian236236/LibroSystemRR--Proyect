@@ -4,6 +4,7 @@ package librosystemrr.excepciones;
  * Excepción lanzada cuando un Lector con multas pendientes intenta realizar
  * un nuevo préstamo.
  */
+@SuppressWarnings("serial")
 public class UsuarioConDeudaException extends LibroSystemException {
 
     /**

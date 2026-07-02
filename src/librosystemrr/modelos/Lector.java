@@ -57,18 +57,14 @@ public class Lector extends Usuario {
      * @return {@code true} si tiene al menos una multa sin pagar.
      */
     public boolean tieneDeudas() {
-        // Usamos toArray() del historial (via getCabeza) para no destruir la Pila
         int total = getHistorialPrestamos().getTamanio();
         if (total == 0) return false;
 
-        // Recorrer la pila sin destruirla usando toArray de la ListaEnlazada interna
-        // La Pila expone getTope() pero no tiene iterador — usamos un arreglo auxiliar
         Prestamo[] temporal = new Prestamo[total];
         for (int i = 0; i < total; i++) {
             temporal[i] = getHistorialPrestamos().desapilar();
         }
         boolean tieneDeuda = false;
-        // Restaurar la pila en el mismo orden (apilar al revés)
         for (int i = total - 1; i >= 0; i--) {
             if (temporal[i].getMulta() != null && !temporal[i].getMulta().isPagada()) {
                 tieneDeuda = true;

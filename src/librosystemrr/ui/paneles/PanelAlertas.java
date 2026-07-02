@@ -1,5 +1,6 @@
 package librosystemrr.ui.paneles;
 
+import librosystemrr.modelos.Multa;
 import librosystemrr.modelos.Prestamo;
 import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.tads.ListaEnlazada;
@@ -16,6 +17,7 @@ import java.text.SimpleDateFormat;
  *
  * <p>Solo interactúa con la capa de negocio a través de {@link SistemaBiblioteca}.</p>
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class PanelAlertas extends JPanel {
 
     private final SistemaBiblioteca sistema;
@@ -211,7 +213,7 @@ public class PanelAlertas extends JPanel {
         for (int i = 0; i < vencidos.getTamanio(); i++) {
             Prestamo p = vencidos.obtener(i);
             int diasRetraso = p.getDiasRetraso();
-            double multa = diasRetraso * 0.50; // MONTO_POR_DIA
+            double multa = diasRetraso * Multa.MONTO_POR_DIA;
             montoTotal += multa;
 
             modeloTabla.addRow(new Object[]{

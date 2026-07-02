@@ -4,6 +4,7 @@ package librosystemrr.excepciones;
  * Excepción lanzada cuando se intenta prestar un libro que ya está prestado
  * (disponible = false).
  */
+@SuppressWarnings("serial")
 public class LibroNoDisponibleException extends LibroSystemException {
 
     /**

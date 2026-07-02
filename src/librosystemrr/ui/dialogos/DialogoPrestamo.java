@@ -11,6 +11,7 @@ import java.awt.*;
  * Diálogo modal para registrar un nuevo préstamo en el sistema.
  * Solicita el ID del usuario y el ISBN del libro.
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class DialogoPrestamo extends JDialog {
 
     private final SistemaBiblioteca sistema;

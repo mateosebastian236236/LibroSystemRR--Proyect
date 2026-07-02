@@ -10,6 +10,7 @@ import java.awt.*;
 /**
  * Diálogo modal para registrar un nuevo libro en el catálogo.
  */
+@SuppressWarnings({"serial", "this-escape"})
 public class DialogoLibro extends JDialog {
 
     private final SistemaBiblioteca sistema;

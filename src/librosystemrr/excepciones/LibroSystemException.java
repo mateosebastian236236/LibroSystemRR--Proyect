@@ -7,6 +7,7 @@ import java.util.Date;
  * Extiende {@link RuntimeException} para ser unchecked, lo que simplifica
  * el manejo en capas superiores.
  */
+@SuppressWarnings("serial")
 public abstract class LibroSystemException extends RuntimeException {
 
     private final String mensaje;
