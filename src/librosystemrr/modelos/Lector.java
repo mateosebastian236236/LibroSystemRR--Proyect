@@ -11,6 +11,8 @@ import java.io.Serializable;
 
 public class Lector extends Usuario implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Máximo de préstamos activos permitidos para un lector. */
     public static final int LIMITE_PRESTAMOS = 3;
 

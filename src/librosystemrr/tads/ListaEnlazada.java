@@ -13,6 +13,8 @@ import java.io.Serializable;
 
 public class ListaEnlazada<T> implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Primer nodo de la lista. */
     private Nodo<T> cabeza;
 

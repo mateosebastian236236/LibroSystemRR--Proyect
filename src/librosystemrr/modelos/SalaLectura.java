@@ -12,6 +12,8 @@ import librosystemrr.tads.Cola;
  */
 public class SalaLectura implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Identificador único de la sala (ej. "S01"). */
     private String id;
 

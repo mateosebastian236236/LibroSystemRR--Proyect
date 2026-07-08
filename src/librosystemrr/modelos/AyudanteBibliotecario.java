@@ -9,6 +9,8 @@ import java.io.Serializable;
 
 public class AyudanteBibliotecario extends Usuario implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Código interno del empleado. */
     private String codigoEmpleado;
 

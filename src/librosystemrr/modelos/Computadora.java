@@ -9,6 +9,8 @@ import java.io.Serializable;
  */
 public class Computadora implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Identificador único. */
     private String id;
 

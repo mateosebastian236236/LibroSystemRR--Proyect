@@ -10,6 +10,8 @@ import java.io.Serializable;
 
 public class Nodo<T> implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Dato almacenado en este nodo. */
     private T dato;
 

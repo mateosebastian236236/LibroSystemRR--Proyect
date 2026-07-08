@@ -2,6 +2,7 @@ package librosystemrr.ui.dialogos;
 
 import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.Libro;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 
 import javax.swing.*;
@@ -99,6 +100,7 @@ public class DialogoLibro extends JDialog {
         try {
             sistema.registrarLibro(new Libro(isbn, titulo, autor, anio));
             confirmado = true;
+            GestorPersistencia.guardarActual();
             JOptionPane.showMessageDialog(this, "Libro registrado exitosamente.",
                     "Registro exitoso", JOptionPane.INFORMATION_MESSAGE);
             dispose();

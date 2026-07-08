@@ -11,6 +11,8 @@ import java.io.Serializable;
  */
 public abstract class Usuario implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Identificador único del usuario. */
     private String id;
 
@@ -20,17 +22,20 @@ public abstract class Usuario implements Serializable {
     /** Contraseña de acceso al sistema. */
     private String contrasena;
 
-    /** Contraseña para el inicio de sesión. */
-    private String contrasena;
-
-    /** Cola de préstamos activos (FIFO). */
+    /**
+     * Cola de préstamos activos (FIFO).
+     * El primer préstamo en entrar es el primero en procesarse.
+     */
     private Cola<Prestamo> prestamosActivos;
 
-    /** Historial de todos los préstamos realizados (LIFO). */
+    /**
+     * Historial de todos los préstamos realizados (LIFO).
+     * El último préstamo registrado aparece primero.
+     */
     private Pila<Prestamo> historialPrestamos;
 
     /**
-     * Construye un usuario con ID, nombre y contraseña personalizada.
+     * Construye un usuario con ID, nombre y contraseña.
      *
      * @param id         Identificador único.
      * @param nombre     Nombre completo.
@@ -69,16 +74,13 @@ public abstract class Usuario implements Serializable {
     // GETTERS
     // ══════════════════════════════════════════
 
-    /** @return Contraseña del usuario (uso interno de autenticación). */
-    public String getContrasena() { return contrasena; }
-
     /** @return Identificador único del usuario. */
     public String getId() { return id; }
 
     /** @return Nombre completo del usuario. */
     public String getNombre() { return nombre; }
 
-    /** @return Contraseña del usuario. */
+    /** @return Contraseña del usuario (uso interno de autenticación). */
     public String getContrasena() { return contrasena; }
 
     /** @return Cola de préstamos activos del usuario. */

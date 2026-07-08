@@ -13,6 +13,8 @@ import java.io.Serializable;
 
 public class Cola<T> implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Nodo al frente de la cola (el siguiente en salir). */
     private Nodo<T> frente;
 

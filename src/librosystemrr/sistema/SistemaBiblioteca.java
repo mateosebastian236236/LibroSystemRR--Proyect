@@ -34,6 +34,8 @@ import java.io.Serializable;
 
 public class SistemaBiblioteca implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Catálogo de libros organizado en BST (búsqueda O(log n) por ISBN). */
     private CatalogoBST catalogo;
 

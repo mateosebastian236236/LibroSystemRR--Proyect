@@ -2,6 +2,7 @@ package librosystemrr.ui.paneles;
 
 import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.Libro;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.tads.ListaEnlazada;
 import librosystemrr.ui.dialogos.DialogoLibro;
@@ -225,6 +226,7 @@ public class PanelCatalogo extends JPanel {
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             sistema.getCatalogo().eliminar(isbn);
+            GestorPersistencia.guardarActual();
             refrescar();
             lblResultados.setText("Libro \"" + titulo + "\" eliminado del catálogo.");
         }
@@ -235,7 +237,7 @@ public class PanelCatalogo extends JPanel {
                 (JFrame) SwingUtilities.getWindowAncestor(this), sistema
         );
         dialogo.setVisible(true);
-        if (dialogo.isConfirmado()) refrescar();
+        if (dialogo.isConfirmado()) { refrescar(); GestorPersistencia.guardarActual(); }
     }
 
     private void cargarEnTabla(ListaEnlazada<Libro> lista) {

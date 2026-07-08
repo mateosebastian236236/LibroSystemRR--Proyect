@@ -17,11 +17,10 @@ import java.util.Date;
 public class Main {
 
     public static void main(String[] args) {
-        // Usar Nimbus L&F para que los colores de botones se vean correctamente
+        // Nimbus L&F para botones con color correcto
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {
-            // Si Nimbus no está disponible, usar Metal (también respeta colores)
             try { UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); }
             catch (Exception ignored) { }
         }
@@ -38,6 +37,15 @@ public class Main {
             sistema = new SistemaBiblioteca();
             cargarDatosDePrueba(sistema);
         }
+
+        // Registrar el sistema en GestorPersistencia para guardado automático
+        GestorPersistencia.inicializar(sistema);
+
+        // Shutdown hook: guarda aunque el programa sea detenido con el botón stop de IntelliJ
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            GestorPersistencia.guardarActual();
+            System.out.println("[LibroSystemRR] Datos guardados al cerrar.");
+        }));
 
         final SistemaBiblioteca sistemaCargado = sistema;
 
@@ -61,7 +69,6 @@ public class Main {
 
     /**
      * Carga datos iniciales la primera vez que se ejecuta el sistema.
-     * Incluye libros, usuarios (con contraseña), salas, computadoras y préstamos de prueba.
      *
      * @param sistema Sistema de biblioteca a poblar.
      */
@@ -102,8 +109,6 @@ public class Main {
         try {
             sistema.registrarPrestamo("L001", "978-0-13-110362-7");
             sistema.registrarPrestamo("L002", "978-0-201-63361-0");
-
-            // Prestamo vencido para demostrar panel de Alertas
             Prestamo vencido = sistema.registrarPrestamo("L003", "978-0-13-468599-1");
             long veinteDias = 20L * 24 * 60 * 60 * 1000;
             vencido.setFechaDevolucion(new Date(System.currentTimeMillis() - veinteDias));

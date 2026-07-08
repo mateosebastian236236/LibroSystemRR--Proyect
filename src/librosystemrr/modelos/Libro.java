@@ -13,6 +13,8 @@ import java.io.Serializable;
 
 public class Libro implements Ordenable<Libro> {
 
+    private static final long serialVersionUID = 1L;
+
     /** ISBN único del libro. Clave de búsqueda en el BST. */
     private String isbn;
 

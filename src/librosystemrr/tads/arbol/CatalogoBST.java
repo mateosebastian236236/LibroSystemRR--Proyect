@@ -22,7 +22,9 @@ import librosystemrr.tads.ListaEnlazada;
  */
 import java.io.Serializable;
 
-public class CatalogoBST implements Buscable {
+public class CatalogoBST implements Buscable, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Raíz del árbol. */
     private NodoBST raiz;

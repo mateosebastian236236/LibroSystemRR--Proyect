@@ -13,6 +13,8 @@ import java.io.Serializable;
 
 public class NodoBST implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Libro almacenado en este nodo. */
     private Libro libro;
 

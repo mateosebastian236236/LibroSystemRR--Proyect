@@ -2,6 +2,7 @@ package librosystemrr.ui.paneles;
 
 import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.Prestamo;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.tads.ListaEnlazada;
 import librosystemrr.ui.dialogos.DialogoPrestamo;
@@ -197,6 +198,7 @@ public class PanelPrestamos extends JPanel {
             librosystemrr.modelos.Prestamo p = sistema.getPrestamos().obtener(i);
             if (p.getId().equals(idPrestamo) && p.getMulta() != null && !p.getMulta().isPagada()) {
                 p.getMulta().pagar();
+                GestorPersistencia.guardarActual();
                 JOptionPane.showMessageDialog(this,
                         "Multa de $" + String.format("%.2f", p.getMulta().getMonto()) + " pagada exitosamente.",
                         "Pago registrado", JOptionPane.INFORMATION_MESSAGE);
@@ -211,7 +213,7 @@ public class PanelPrestamos extends JPanel {
                 (JFrame) SwingUtilities.getWindowAncestor(this), sistema
         );
         dialogo.setVisible(true);
-        if (dialogo.isConfirmado()) refrescar();
+        if (dialogo.isConfirmado()) { refrescar(); GestorPersistencia.guardarActual(); }
     }
 
     private void procesarDevolucion() {

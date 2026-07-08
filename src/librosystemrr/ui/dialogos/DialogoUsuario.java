@@ -4,6 +4,7 @@ import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.AyudanteBibliotecario;
 import librosystemrr.modelos.Bibliotecario;
 import librosystemrr.modelos.Lector;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 
 import javax.swing.*;
@@ -155,6 +156,7 @@ public class DialogoUsuario extends JDialog {
                     break;
             }
 
+            GestorPersistencia.guardarActual();
             confirmado = true;
             JOptionPane.showMessageDialog(this,
                     capitalizar(tipo) + " registrado exitosamente.",

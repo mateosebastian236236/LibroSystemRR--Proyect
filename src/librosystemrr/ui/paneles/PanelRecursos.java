@@ -4,6 +4,7 @@ import librosystemrr.modelos.Computadora;
 import librosystemrr.modelos.SalaLectura;
 import librosystemrr.modelos.SolicitudComputadora;
 import librosystemrr.modelos.SolicitudSala;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.tads.ListaEnlazada;
 
@@ -175,6 +176,7 @@ public class PanelRecursos extends JPanel {
                     ? "Sala asignada exitosamente a " + nombreUsuario.trim() + " (ID solicitud: " + sol.getId() + ")"
                     : "Todas las salas ocupadas. " + nombreUsuario.trim() + " en lista de espera (ID: " + sol.getId() + ")";
             mostrarMensaje(msg, sol.getEstado().equals("ASIGNADA"));
+            GestorPersistencia.guardarActual();
             refrescar();
         } catch (Exception ex) {
             mostrarMensaje(ex.getMessage(), false);
@@ -193,6 +195,7 @@ public class PanelRecursos extends JPanel {
         }
 
         sistema.liberarSala(idSala);
+        GestorPersistencia.guardarActual();
         mostrarMensaje("Sala liberada correctamente.", true);
         refrescar();
     }
@@ -225,6 +228,7 @@ public class PanelRecursos extends JPanel {
                     ? "Computadora asignada a " + nombreUsuario.trim() + " (ID solicitud: " + sol.getId() + ")"
                     : "Todas las computadoras ocupadas. " + nombreUsuario.trim() + " en lista de espera.";
             mostrarMensaje(msg, sol.getEstado().equals("ASIGNADA"));
+            GestorPersistencia.guardarActual();
             refrescar();
         } catch (Exception ex) {
             mostrarMensaje(ex.getMessage(), false);
@@ -243,6 +247,7 @@ public class PanelRecursos extends JPanel {
         }
 
         sistema.liberarComputadora(idComp);
+        GestorPersistencia.guardarActual();
         mostrarMensaje("Computadora liberada correctamente.", true);
         refrescar();
     }

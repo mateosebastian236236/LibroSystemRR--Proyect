@@ -10,6 +10,8 @@ import java.io.Serializable;
 
 public class Multa implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Monto cobrado por cada día de retraso (en dólares). */
     public static final double MONTO_POR_DIA = 0.50;
 
