@@ -145,6 +145,9 @@ public class PanelUsuarios extends JPanel {
         btnNuevoLector.setBackground(new Color(40, 120, 80));
         btnNuevoLector.setForeground(Color.WHITE);
         btnNuevoLector.setFocusPainted(false);
+        btnNuevoLector.setOpaque(true);
+        btnNuevoLector.setBorderPainted(false);
+
 
         btnNuevoLector.addActionListener(e -> abrirDialogoNuevoUsuario("LECTOR"));
         btnNuevoBibliotecario.addActionListener(e -> abrirDialogoNuevoUsuario("BIBLIOTECARIO"));

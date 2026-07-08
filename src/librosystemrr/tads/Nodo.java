@@ -6,7 +6,9 @@ package librosystemrr.tads;
  *
  * @param <T> Tipo del dato almacenado en el nodo.
  */
-public class Nodo<T> {
+import java.io.Serializable;
+
+public class Nodo<T> implements Serializable {
 
     /** Dato almacenado en este nodo. */
     private T dato;

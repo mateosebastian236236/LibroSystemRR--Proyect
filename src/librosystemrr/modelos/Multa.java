@@ -6,7 +6,9 @@ import java.util.Date;
  * Representa una multa generada por la devolución tardía de un préstamo.
  * El monto se calcula automáticamente a razón de {@link #MONTO_POR_DIA} por día de retraso.
  */
-public class Multa {
+import java.io.Serializable;
+
+public class Multa implements Serializable {
 
     /** Monto cobrado por cada día de retraso (en dólares). */
     public static final double MONTO_POR_DIA = 0.50;

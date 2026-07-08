@@ -9,7 +9,9 @@ package librosystemrr.tads;
  *
  * @param <T> Tipo de los elementos almacenados.
  */
-public class Cola<T> {
+import java.io.Serializable;
+
+public class Cola<T> implements Serializable {
 
     /** Nodo al frente de la cola (el siguiente en salir). */
     private Nodo<T> frente;

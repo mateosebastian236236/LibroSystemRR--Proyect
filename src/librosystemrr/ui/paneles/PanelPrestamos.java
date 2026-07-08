@@ -95,12 +95,21 @@ public class PanelPrestamos extends JPanel {
         btnNuevo.setBackground(new Color(30, 58, 95));
         btnNuevo.setForeground(Color.WHITE);
         btnNuevo.setFocusPainted(false);
+        btnNuevo.setOpaque(true);
+        btnNuevo.setBorderPainted(false);
+
         btnDevolver.setBackground(new Color(40, 100, 60));
         btnDevolver.setForeground(Color.WHITE);
         btnDevolver.setFocusPainted(false);
+        btnDevolver.setOpaque(true);
+        btnDevolver.setBorderPainted(false);
+
         btnPagarMulta.setBackground(new Color(140, 80, 20));
         btnPagarMulta.setForeground(Color.WHITE);
         btnPagarMulta.setFocusPainted(false);
+        btnPagarMulta.setOpaque(true);
+        btnPagarMulta.setBorderPainted(false);
+
 
         btnNuevo.addActionListener(e -> abrirDialogoNuevoPrestamo());
         btnDevolver.addActionListener(e -> procesarDevolucion());

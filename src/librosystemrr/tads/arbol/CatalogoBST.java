@@ -20,6 +20,8 @@ import librosystemrr.tads.ListaEnlazada;
  *   <li>Eliminar — O(log n) promedio / O(n) peor caso</li>
  * </ul>
  */
+import java.io.Serializable;
+
 public class CatalogoBST implements Buscable {
 
     /** Raíz del árbol. */

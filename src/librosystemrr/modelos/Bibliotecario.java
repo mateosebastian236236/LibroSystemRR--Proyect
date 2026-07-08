@@ -4,7 +4,9 @@ package librosystemrr.modelos;
  * Representa a un bibliotecario de la institución. Extiende {@link Usuario}
  * y tiene permisos para registrar libros y procesar devoluciones.
  */
-public class Bibliotecario extends Usuario {
+import java.io.Serializable;
+
+public class Bibliotecario extends Usuario implements Serializable {
 
     /** Código interno del empleado. */
     private String codigoEmpleado;
@@ -16,8 +18,8 @@ public class Bibliotecario extends Usuario {
      * @param nombre         Nombre completo.
      * @param codigoEmpleado Código interno del empleado.
      */
-    public Bibliotecario(String id, String nombre, String codigoEmpleado) {
-        super(id, nombre);
+    public Bibliotecario(String id, String nombre, String codigoEmpleado, String contrasena) {
+        super(id, nombre, contrasena);
         this.codigoEmpleado = codigoEmpleado;
     }
 

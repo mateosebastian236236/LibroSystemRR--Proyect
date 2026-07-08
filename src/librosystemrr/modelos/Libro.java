@@ -9,6 +9,8 @@ import librosystemrr.interfaces.Ordenable;
  *
  * <p>El ISBN actúa como clave única e inmutable del libro.</p>
  */
+import java.io.Serializable;
+
 public class Libro implements Ordenable<Libro> {
 
     /** ISBN único del libro. Clave de búsqueda en el BST. */

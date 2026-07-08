@@ -1,7 +1,9 @@
 package librosystemrr;
 
 import librosystemrr.modelos.*;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
+import librosystemrr.ui.PanelLogin;
 import librosystemrr.ui.VentanaPrincipal;
 
 import javax.swing.*;
@@ -9,39 +11,63 @@ import java.util.Date;
 
 /**
  * Punto de entrada del sistema LibroSystemRR.
- * Inicializa el sistema, carga datos de prueba y lanza la interfaz gráfica.
+ * Carga los datos persistidos (o inicializa con datos de prueba si es la primera vez),
+ * muestra el login y lanza la interfaz principal.
  */
 public class Main {
 
     public static void main(String[] args) {
-        // Usar el look and feel del sistema operativo
+        // Usar Nimbus L&F para que los colores de botones se vean correctamente
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {
-            // Si falla, se usa el look and feel por defecto de Java (Metal)
+            // Si Nimbus no está disponible, usar Metal (también respeta colores)
+            try { UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); }
+            catch (Exception ignored) { }
         }
 
-        // Inicializar sistema y cargar datos de prueba
-        SistemaBiblioteca sistema = new SistemaBiblioteca();
-        cargarDatosDePrueba(sistema);
+        // Cargar datos persistidos o inicializar por primera vez
+        SistemaBiblioteca sistema;
+        if (GestorPersistencia.existenDatos()) {
+            sistema = GestorPersistencia.cargar();
+            if (sistema == null) {
+                sistema = new SistemaBiblioteca();
+                cargarDatosDePrueba(sistema);
+            }
+        } else {
+            sistema = new SistemaBiblioteca();
+            cargarDatosDePrueba(sistema);
+        }
 
-        // Lanzar la UI en el Event Dispatch Thread (EDT) de Swing
+        final SistemaBiblioteca sistemaCargado = sistema;
+
         SwingUtilities.invokeLater(() -> {
-            VentanaPrincipal ventana = new VentanaPrincipal(sistema);
+            // Mostrar login
+            PanelLogin login = new PanelLogin(sistemaCargado);
+            login.setVisible(true);
+
+            if (!login.isLoginExitoso()) {
+                System.exit(0);
+            }
+
+            // Login exitoso: abrir ventana principal
+            VentanaPrincipal ventana = new VentanaPrincipal(
+                    sistemaCargado,
+                    () -> GestorPersistencia.guardar(sistemaCargado)
+            );
             ventana.mostrar();
         });
     }
 
     /**
-     * Carga datos de prueba en el sistema para facilitar la demostración y defensa.
-     * Incluye 5 libros, 3 usuarios (1 Lector, 1 Bibliotecario, 1 Ayudante)
-     * y 2 préstamos de prueba.
+     * Carga datos iniciales la primera vez que se ejecuta el sistema.
+     * Incluye libros, usuarios (con contraseña), salas, computadoras y préstamos de prueba.
      *
-     * @param sistema Sistema de biblioteca donde se cargarán los datos.
+     * @param sistema Sistema de biblioteca a poblar.
      */
     private static void cargarDatosDePrueba(SistemaBiblioteca sistema) {
 
-        // ── Libros ──
+        // Libros
         sistema.registrarLibro(new Libro("978-0-13-110362-7",
                 "The C Programming Language", "Brian W. Kernighan", 1988));
         sistema.registrarLibro(new Libro("978-0-201-63361-0",
@@ -53,28 +79,36 @@ public class Main {
         sistema.registrarLibro(new Libro("978-0-13-235088-4",
                 "The Pragmatic Programmer", "David Thomas", 2019));
 
-        // ── Usuarios ──
-        sistema.registrarUsuario(new Lector("L001", "Ana Torres"));
-        sistema.registrarUsuario(new Lector("L002", "Carlos Méndez"));
-        sistema.registrarUsuario(new Bibliotecario("B001", "María López", "EMP-2024-01"));
-        sistema.registrarUsuario(new AyudanteBibliotecario("A001", "Luis Paredes", "EMP-2024-02"));
+        // Usuarios (id, nombre, contrasena)
+        sistema.registrarUsuario(new Lector("L001", "Ana Torres", "ana123"));
+        sistema.registrarUsuario(new Lector("L002", "Carlos Mendez", "carlos123"));
+        sistema.registrarUsuario(new Lector("L003", "Pedro Alvarado", "pedro123"));
+        sistema.registrarUsuario(new Bibliotecario("B001", "Maria Lopez", "EMP-2024-01", "biblio123"));
+        sistema.registrarUsuario(new AyudanteBibliotecario("A001", "Luis Paredes", "EMP-2024-02", "ayudante123"));
 
-        // Usuario extra para el préstamo vencido
-        sistema.registrarUsuario(new Lector("L003", "Pedro Alvarado"));
+        // Salas de lectura
+        sistema.registrarSala(new SalaLectura("S01", "Sala A - General", 10));
+        sistema.registrarSala(new SalaLectura("S02", "Sala B - Silenciosa", 6));
+        sistema.registrarSala(new SalaLectura("S03", "Sala C - Grupal", 20));
 
-        // ── Préstamos de prueba ──
+        // Computadoras
+        sistema.registrarComputadora(new Computadora("C01", 1));
+        sistema.registrarComputadora(new Computadora("C02", 2));
+        sistema.registrarComputadora(new Computadora("C03", 3));
+        sistema.registrarComputadora(new Computadora("C04", 4));
+        sistema.registrarComputadora(new Computadora("C05", 5));
+
+        // Prestamos de prueba
         try {
-            sistema.registrarPrestamo("L001", "978-0-13-110362-7"); // Ana toma "The C Programming Language"
-            sistema.registrarPrestamo("L002", "978-0-201-63361-0"); // Carlos toma "Design Patterns"
+            sistema.registrarPrestamo("L001", "978-0-13-110362-7");
+            sistema.registrarPrestamo("L002", "978-0-201-63361-0");
 
-            // Préstamo vencido para demostrar el panel de Alertas en la defensa
-            Prestamo prestamoVencido = sistema.registrarPrestamo("L003", "978-0-13-468599-1");
-            // Retroceder la fecha de devolución 20 días para simular vencimiento
+            // Prestamo vencido para demostrar panel de Alertas
+            Prestamo vencido = sistema.registrarPrestamo("L003", "978-0-13-468599-1");
             long veinteDias = 20L * 24 * 60 * 60 * 1000;
-            prestamoVencido.setFechaDevolucion(new Date(System.currentTimeMillis() - veinteDias));
-
+            vencido.setFechaDevolucion(new Date(System.currentTimeMillis() - veinteDias));
         } catch (Exception e) {
-            System.err.println("Error al cargar préstamos de prueba: " + e.getMessage());
+            System.err.println("Error al cargar prestamos de prueba: " + e.getMessage());
         }
     }
 }

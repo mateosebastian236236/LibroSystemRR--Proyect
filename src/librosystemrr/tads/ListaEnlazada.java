@@ -9,7 +9,9 @@ package librosystemrr.tads;
  *
  * @param <T> Tipo de los elementos almacenados.
  */
-public class ListaEnlazada<T> {
+import java.io.Serializable;
+
+public class ListaEnlazada<T> implements Serializable {
 
     /** Primer nodo de la lista. */
     private Nodo<T> cabeza;

@@ -7,7 +7,9 @@ package librosystemrr.modelos;
  * <p>Un lector no puede tener más de {@link #LIMITE_PRESTAMOS} préstamos activos
  * ni puede solicitar nuevos préstamos si tiene deudas pendientes.</p>
  */
-public class Lector extends Usuario {
+import java.io.Serializable;
+
+public class Lector extends Usuario implements Serializable {
 
     /** Máximo de préstamos activos permitidos para un lector. */
     public static final int LIMITE_PRESTAMOS = 3;
@@ -18,8 +20,8 @@ public class Lector extends Usuario {
      * @param id     Identificador único del lector.
      * @param nombre Nombre completo del lector.
      */
-    public Lector(String id, String nombre) {
-        super(id, nombre);
+    public Lector(String id, String nombre, String contrasena) {
+        super(id, nombre, contrasena);
     }
 
     // ══════════════════════════════════════════

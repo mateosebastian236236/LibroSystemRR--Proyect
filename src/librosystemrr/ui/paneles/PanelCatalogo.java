@@ -110,9 +110,15 @@ public class PanelCatalogo extends JPanel {
         btnNuevo.setBackground(new Color(30, 58, 95));
         btnNuevo.setForeground(Color.WHITE);
         btnNuevo.setFocusPainted(false);
+        btnNuevo.setOpaque(true);
+        btnNuevo.setBorderPainted(false);
+
         btnEliminar.setBackground(new Color(160, 40, 40));
         btnEliminar.setForeground(Color.WHITE);
         btnEliminar.setFocusPainted(false);
+        btnEliminar.setOpaque(true);
+        btnEliminar.setBorderPainted(false);
+
 
         btnNuevo.addActionListener(e -> abrirDialogoNuevoLibro());
         btnEliminar.addActionListener(e -> eliminarLibroSeleccionado());
