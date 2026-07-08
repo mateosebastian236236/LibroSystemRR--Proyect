@@ -11,7 +11,7 @@ import librosystemrr.interfaces.Ordenable;
  */
 import java.io.Serializable;
 
-public class Libro implements Ordenable<Libro> {
+public class Libro implements Ordenable<Libro>, Serializable {
 
     private static final long serialVersionUID = 1L;
 

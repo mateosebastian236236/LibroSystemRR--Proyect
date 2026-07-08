@@ -170,11 +170,12 @@ public class PanelRecursos extends JPanel {
         catch (NumberFormatException e) { mostrarMensaje("Ingresa un numero valido de horas.", false); return; }
 
         try {
-            SolicitudSala sol = sistema.solicitarSala(
-                    idUsuario.trim(), nombreUsuario.trim(), horas);
+            // Pasa el idSala seleccionado para reservar ESA sala específica
+            SolicitudSala sol = sistema.solicitarSalaEspecifica(
+                    idSala, idUsuario.trim(), nombreUsuario.trim(), horas);
             String msg = sol.getEstado().equals("ASIGNADA")
                     ? "Sala asignada exitosamente a " + nombreUsuario.trim() + " (ID solicitud: " + sol.getId() + ")"
-                    : "Todas las salas ocupadas. " + nombreUsuario.trim() + " en lista de espera (ID: " + sol.getId() + ")";
+                    : "Sala ocupada. " + nombreUsuario.trim() + " en cola de espera de esta sala (ID: " + sol.getId() + ")";
             mostrarMensaje(msg, sol.getEstado().equals("ASIGNADA"));
             GestorPersistencia.guardarActual();
             refrescar();

@@ -337,19 +337,55 @@ public class SistemaBiblioteca implements Serializable {
      * @return La {@link SolicitudSala} creada.
      */
     public SolicitudSala solicitarSala(String idUsuario, String nombreUsuario, int duracionHoras) {
+        return solicitarSalaEspecifica(null, idUsuario, nombreUsuario, duracionHoras);
+    }
+
+    /**
+     * Solicita una sala específica por ID.
+     * Si la sala está libre, se asigna inmediatamente.
+     * Si está ocupada, el usuario entra a la cola de espera de ESA sala (FIFO).
+     *
+     * @param idSala        ID de la sala específica solicitada. Si es {@code null}, asigna cualquier sala libre.
+     * @param idUsuario     ID del usuario solicitante.
+     * @param nombreUsuario Nombre del usuario.
+     * @param duracionHoras Horas de uso solicitadas.
+     * @return La {@link SolicitudSala} creada.
+     */
+    public SolicitudSala solicitarSalaEspecifica(String idSala, String idUsuario,
+                                                 String nombreUsuario, int duracionHoras) {
         String idSol = "RS" + String.format("%04d", contadorSolicitudesSalas++);
         SolicitudSala solicitud = new SolicitudSala(idSol, idUsuario, nombreUsuario, duracionHoras);
 
+        // Buscar la sala específica solicitada
+        if (idSala != null) {
+            for (int i = 0; i < salas.getTamanio(); i++) {
+                SalaLectura sala = salas.obtener(i);
+                if (sala.getId().equals(idSala)) {
+                    if (!sala.isOcupada()) {
+                        sala.asignar(solicitud);
+                        logger.registrarInfo("Sala '" + sala.getNombre() + "' asignada a " + nombreUsuario);
+                    } else {
+                        sala.encolarEspera(solicitud);
+                        logger.registrarWarning("Sala '" + sala.getNombre() + "' ocupada. " +
+                                nombreUsuario + " en cola de espera (pos. " +
+                                sala.getColaEspera().getTamanio() + ")");
+                    }
+                    return solicitud;
+                }
+            }
+        }
+
+        // Si no se especificó sala o no se encontró, asignar la primera libre
         for (int i = 0; i < salas.getTamanio(); i++) {
             SalaLectura sala = salas.obtener(i);
             if (!sala.isOcupada()) {
                 sala.asignar(solicitud);
-                logger.registrarInfo("Sala " + sala.getNumero() + " asignada a " + nombreUsuario);
+                logger.registrarInfo("Sala '" + sala.getNombre() + "' asignada a " + nombreUsuario);
                 return solicitud;
             }
         }
         colaSalas.encolar(solicitud);
-        logger.registrarWarning("Todas las salas ocupadas. " + nombreUsuario + " en lista de espera.");
+        logger.registrarWarning("Todas las salas ocupadas. " + nombreUsuario + " en lista de espera general.");
         return solicitud;
     }
 

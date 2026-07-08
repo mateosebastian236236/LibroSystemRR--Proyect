@@ -10,6 +10,8 @@ import java.util.Date;
  */
 public class SolicitudComputadora implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /** Identificador único de la solicitud. */
     private String id;
 
