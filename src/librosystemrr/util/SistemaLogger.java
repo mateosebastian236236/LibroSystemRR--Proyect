@@ -1,5 +1,6 @@
 package librosystemrr.util;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -10,10 +11,10 @@ import java.util.Date;
  * <p>Registra eventos de tipo INFO, WARNING y ERROR en consola.
  * En Semanas 5-7 se puede extender para escribir en archivo.</p>
  */
-public class SistemaLogger {
+public class SistemaLogger implements Serializable {
 
     /** Única instancia del logger (Singleton). */
-    private static SistemaLogger instancia;
+    private static transient SistemaLogger instancia;
 
     /** Ruta del archivo de log (extensible en iteraciones futuras). */
     private final String archivoLog;
@@ -84,5 +85,15 @@ public class SistemaLogger {
      */
     public String getArchivoLog() {
         return archivoLog;
+    }
+
+    /**
+     * Garantiza que la deserialización retorne siempre la misma instancia Singleton.
+     * Evita que Java Serialization cree una segunda instancia del logger.
+     *
+     * @return La única instancia existente de {@link SistemaLogger}.
+     */
+    private Object readResolve() {
+        return getInstancia();
     }
 }

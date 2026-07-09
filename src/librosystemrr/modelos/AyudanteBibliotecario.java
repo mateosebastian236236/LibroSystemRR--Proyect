@@ -5,7 +5,11 @@ package librosystemrr.modelos;
  * con permisos limitados: puede registrar préstamos y procesar devoluciones,
  * pero no registrar nuevos libros.
  */
-public class AyudanteBibliotecario extends Usuario {
+import java.io.Serializable;
+
+public class AyudanteBibliotecario extends Usuario implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Código interno del empleado. */
     private String codigoEmpleado;
@@ -17,8 +21,8 @@ public class AyudanteBibliotecario extends Usuario {
      * @param nombre         Nombre completo.
      * @param codigoEmpleado Código interno del empleado.
      */
-    public AyudanteBibliotecario(String id, String nombre, String codigoEmpleado) {
-        super(id, nombre);
+    public AyudanteBibliotecario(String id, String nombre, String codigoEmpleado, String contrasena) {
+        super(id, nombre, contrasena);
         this.codigoEmpleado = codigoEmpleado;
     }
 

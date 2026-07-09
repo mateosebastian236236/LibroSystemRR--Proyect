@@ -2,6 +2,7 @@ package librosystemrr.ui.paneles;
 
 import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.Libro;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.tads.ListaEnlazada;
 import librosystemrr.ui.dialogos.DialogoLibro;
@@ -111,9 +112,15 @@ public class PanelCatalogo extends JPanel {
         btnNuevo.setBackground(new Color(30, 58, 95));
         btnNuevo.setForeground(Color.WHITE);
         btnNuevo.setFocusPainted(false);
+        btnNuevo.setOpaque(true);
+        btnNuevo.setBorderPainted(false);
+
         btnEliminar.setBackground(new Color(160, 40, 40));
         btnEliminar.setForeground(Color.WHITE);
         btnEliminar.setFocusPainted(false);
+        btnEliminar.setOpaque(true);
+        btnEliminar.setBorderPainted(false);
+
 
         btnNuevo.addActionListener(e -> abrirDialogoNuevoLibro());
         btnEliminar.addActionListener(e -> eliminarLibroSeleccionado());
@@ -220,6 +227,7 @@ public class PanelCatalogo extends JPanel {
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             sistema.getCatalogo().eliminar(isbn);
+            GestorPersistencia.guardarActual();
             refrescar();
             lblResultados.setText("Libro \"" + titulo + "\" eliminado del catálogo.");
         }
@@ -230,7 +238,7 @@ public class PanelCatalogo extends JPanel {
                 (JFrame) SwingUtilities.getWindowAncestor(this), sistema
         );
         dialogo.setVisible(true);
-        if (dialogo.isConfirmado()) refrescar();
+        if (dialogo.isConfirmado()) { refrescar(); GestorPersistencia.guardarActual(); }
     }
 
     private void cargarEnTabla(ListaEnlazada<Libro> lista) {

@@ -2,6 +2,7 @@ package librosystemrr.ui.paneles;
 
 import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.Prestamo;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.tads.ListaEnlazada;
 import librosystemrr.ui.dialogos.DialogoPrestamo;
@@ -96,12 +97,21 @@ public class PanelPrestamos extends JPanel {
         btnNuevo.setBackground(new Color(30, 58, 95));
         btnNuevo.setForeground(Color.WHITE);
         btnNuevo.setFocusPainted(false);
+        btnNuevo.setOpaque(true);
+        btnNuevo.setBorderPainted(false);
+
         btnDevolver.setBackground(new Color(40, 100, 60));
         btnDevolver.setForeground(Color.WHITE);
         btnDevolver.setFocusPainted(false);
+        btnDevolver.setOpaque(true);
+        btnDevolver.setBorderPainted(false);
+
         btnPagarMulta.setBackground(new Color(140, 80, 20));
         btnPagarMulta.setForeground(Color.WHITE);
         btnPagarMulta.setFocusPainted(false);
+        btnPagarMulta.setOpaque(true);
+        btnPagarMulta.setBorderPainted(false);
+
 
         btnNuevo.addActionListener(e -> abrirDialogoNuevoPrestamo());
         btnDevolver.addActionListener(e -> procesarDevolucion());
@@ -189,6 +199,7 @@ public class PanelPrestamos extends JPanel {
             librosystemrr.modelos.Prestamo p = sistema.getPrestamos().obtener(i);
             if (p.getId().equals(idPrestamo) && p.getMulta() != null && !p.getMulta().isPagada()) {
                 p.getMulta().pagar();
+                GestorPersistencia.guardarActual();
                 JOptionPane.showMessageDialog(this,
                         "Multa de $" + String.format("%.2f", p.getMulta().getMonto()) + " pagada exitosamente.",
                         "Pago registrado", JOptionPane.INFORMATION_MESSAGE);
@@ -203,7 +214,7 @@ public class PanelPrestamos extends JPanel {
                 (JFrame) SwingUtilities.getWindowAncestor(this), sistema
         );
         dialogo.setVisible(true);
-        if (dialogo.isConfirmado()) refrescar();
+        if (dialogo.isConfirmado()) { refrescar(); GestorPersistencia.guardarActual(); }
     }
 
     private void procesarDevolucion() {

@@ -2,6 +2,7 @@ package librosystemrr.ui.dialogos;
 
 import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.Prestamo;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 
 import javax.swing.*;
@@ -92,6 +93,7 @@ public class DialogoPrestamo extends JDialog {
 
         try {
             Prestamo p = sistema.registrarPrestamo(idUsuario, isbn);
+            GestorPersistencia.guardarActual();
             confirmado = true;
             JOptionPane.showMessageDialog(this,
                     "Préstamo registrado exitosamente.\n" +

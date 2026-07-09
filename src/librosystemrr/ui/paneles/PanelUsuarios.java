@@ -3,6 +3,7 @@ package librosystemrr.ui.paneles;
 import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.Lector;
 import librosystemrr.modelos.Usuario;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 import librosystemrr.tads.ListaEnlazada;
 import librosystemrr.ui.dialogos.DialogoUsuario;
@@ -146,6 +147,9 @@ public class PanelUsuarios extends JPanel {
         btnNuevoLector.setBackground(new Color(40, 120, 80));
         btnNuevoLector.setForeground(Color.WHITE);
         btnNuevoLector.setFocusPainted(false);
+        btnNuevoLector.setOpaque(true);
+        btnNuevoLector.setBorderPainted(false);
+
 
         btnNuevoLector.addActionListener(e -> abrirDialogoNuevoUsuario("LECTOR"));
         btnNuevoBibliotecario.addActionListener(e -> abrirDialogoNuevoUsuario("BIBLIOTECARIO"));
@@ -262,6 +266,7 @@ public class PanelUsuarios extends JPanel {
         dialogo.setVisible(true);
         if (dialogo.isConfirmado()) {
             refrescar();
+            GestorPersistencia.guardarActual();
         }
     }
 }

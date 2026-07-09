@@ -9,7 +9,11 @@ import librosystemrr.modelos.Libro;
  *
  * <p>El orden del BST se basa en el ISBN del libro (orden lexicográfico).</p>
  */
-public class NodoBST {
+import java.io.Serializable;
+
+public class NodoBST implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Libro almacenado en este nodo. */
     private Libro libro;

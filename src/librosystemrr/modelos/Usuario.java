@@ -2,21 +2,25 @@ package librosystemrr.modelos;
 
 import librosystemrr.tads.Cola;
 import librosystemrr.tads.Pila;
+import java.io.Serializable;
 
 /**
  * Clase abstracta que representa a cualquier usuario del sistema de biblioteca.
  * Aplica el patrón Template Method: define la estructura común y delega
- * {@link #getTipo()} a las subclases (Lector, Bibliotecario, AyudanteBibliotecario).
- *
- * <p>Principio OCP: abierta para extensión (nuevas subclases), cerrada para modificación.</p>
+ * {@link #getTipo()} a las subclases.
  */
-public abstract class Usuario {
+public abstract class Usuario implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Identificador único del usuario. */
     private String id;
 
     /** Nombre completo del usuario. */
     private String nombre;
+
+    /** Contraseña de acceso al sistema. */
+    private String contrasena;
 
     /**
      * Cola de préstamos activos (FIFO).
@@ -31,16 +35,28 @@ public abstract class Usuario {
     private Pila<Prestamo> historialPrestamos;
 
     /**
-     * Construye un usuario con ID y nombre.
+     * Construye un usuario con ID, nombre y contraseña.
      *
-     * @param id     Identificador único del usuario.
+     * @param id         Identificador único.
+     * @param nombre     Nombre completo.
+     * @param contrasena Contraseña de acceso al sistema.
+     */
+    public Usuario(String id, String nombre, String contrasena) {
+        this.id = id;
+        this.nombre = nombre;
+        this.contrasena = contrasena;
+        this.prestamosActivos = new Cola<>();
+        this.historialPrestamos = new Pila<>();
+    }
+
+    /**
+     * Construye un usuario con contraseña por defecto "1234".
+     *
+     * @param id     Identificador único.
      * @param nombre Nombre completo.
      */
     public Usuario(String id, String nombre) {
-        this.id = id;
-        this.nombre = nombre;
-        this.prestamosActivos = new Cola<>();
-        this.historialPrestamos = new Pila<>();
+        this(id, nombre, "1234");
     }
 
     // ══════════════════════════════════════════
@@ -49,7 +65,6 @@ public abstract class Usuario {
 
     /**
      * Retorna el tipo de usuario ("LECTOR", "BIBLIOTECARIO", "AYUDANTE").
-     * Cada subclase implementa este método según su rol.
      *
      * @return Cadena que identifica el tipo de usuario.
      */
@@ -64,6 +79,9 @@ public abstract class Usuario {
 
     /** @return Nombre completo del usuario. */
     public String getNombre() { return nombre; }
+
+    /** @return Contraseña del usuario (uso interno de autenticación). */
+    public String getContrasena() { return contrasena; }
 
     /** @return Cola de préstamos activos del usuario. */
     public Cola<Prestamo> getPrestamosActivos() { return prestamosActivos; }

@@ -1,6 +1,8 @@
 package librosystemrr.sistema;
 
 import librosystemrr.algoritmos.AlgoritmosBusqueda;
+import librosystemrr.modelos.Computadora;
+import librosystemrr.modelos.SalaLectura;
 import librosystemrr.algoritmos.AlgoritmosOrdenamiento;
 import librosystemrr.excepciones.CatalogoVacioException;
 import librosystemrr.excepciones.LibroNoDisponibleException;
@@ -11,6 +13,8 @@ import librosystemrr.modelos.Libro;
 import librosystemrr.modelos.Lector;
 import librosystemrr.modelos.Prestamo;
 import librosystemrr.modelos.Usuario;
+import librosystemrr.modelos.SolicitudComputadora;
+import librosystemrr.modelos.SolicitudSala;
 import librosystemrr.tads.Cola;
 import librosystemrr.tads.ListaEnlazada;
 import librosystemrr.tads.arbol.CatalogoBST;
@@ -26,7 +30,11 @@ import librosystemrr.util.SistemaLogger;
  * <p>Principio DIP: depende de las abstracciones {@code Buscable} y {@code Ordenable},
  * no de implementaciones concretas de librerías externas.</p>
  */
-public class SistemaBiblioteca {
+import java.io.Serializable;
+
+public class SistemaBiblioteca implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Catálogo de libros organizado en BST (búsqueda O(log n) por ISBN). */
     private CatalogoBST catalogo;
@@ -40,8 +48,30 @@ public class SistemaBiblioteca {
     /** Logger singleton para registrar operaciones del sistema. */
     private SistemaLogger logger;
 
+    /** Lista de salas de lectura registradas. */
+    private ListaEnlazada<SalaLectura> salas;
+
+    /** Lista de computadoras registradas. */
+    private ListaEnlazada<Computadora> computadoras;
+
     /** Contador para generar IDs únicos de préstamo. */
     private int contadorPrestamos;
+    /** Lista de salas de lectura disponibles. */
+
+    /** Cola general de espera para salas (cuando todas están ocupadas). */
+    private Cola<SolicitudSala> colaSalas;
+
+    /** Lista de computadoras de la biblioteca. */
+
+    /** Cola general de espera para computadoras. */
+    private Cola<SolicitudComputadora> colaComputadoras;
+
+    /** Contador para IDs únicos de solicitudes de sala. */
+    private int contadorSolicitudesSalas;
+
+    /** Contador para IDs únicos de solicitudes de computadora. */
+    private int contadorSolicitudesComputadoras;
+
 
     /**
      * Construye el sistema de biblioteca con todas las estructuras vacías.
@@ -51,7 +81,15 @@ public class SistemaBiblioteca {
         this.usuarios = new ListaEnlazada<>();
         this.prestamos = new ListaEnlazada<>();
         this.logger = SistemaLogger.getInstancia();
+        this.salas = new ListaEnlazada<>();
+        this.computadoras = new ListaEnlazada<>();
         this.contadorPrestamos = 1;
+        this.salas = new ListaEnlazada<>();
+        this.colaSalas = new Cola<>();
+        this.computadoras = new ListaEnlazada<>();
+        this.colaComputadoras = new Cola<>();
+        this.contadorSolicitudesSalas = 1;
+        this.contadorSolicitudesComputadoras = 1;
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -275,15 +313,193 @@ public class SistemaBiblioteca {
     }
 
     // ══════════════════════════════════════════════════════════════
-    // GETTERS (para uso interno y pruebas)
+    // MÓDULO DE SALAS DE LECTURA
     // ══════════════════════════════════════════════════════════════
 
-    /** @return El catálogo BST del sistema. */
+    /**
+     * Registra una sala de lectura en el sistema. O(1).
+     *
+     * @param sala Sala a registrar.
+     */
+    public void registrarSala(SalaLectura sala) {
+        salas.agregar(sala);
+        logger.registrarInfo("Sala registrada: " + sala.getId() + " - " + sala.getNombre());
+    }
+
+    /**
+     * Solicita una sala de lectura para un usuario.
+     * Si hay una sala libre, la asigna directamente.
+     * Si todas estan ocupadas, encola la solicitud (FIFO usando Cola).
+     *
+     * @param idUsuario     ID del usuario solicitante.
+     * @param nombreUsuario Nombre del usuario.
+     * @param duracionHoras Horas de uso solicitadas.
+     * @return La {@link SolicitudSala} creada.
+     */
+    public SolicitudSala solicitarSala(String idUsuario, String nombreUsuario, int duracionHoras) {
+        return solicitarSalaEspecifica(null, idUsuario, nombreUsuario, duracionHoras);
+    }
+
+    /**
+     * Solicita una sala específica por ID.
+     * Si la sala está libre, se asigna inmediatamente.
+     * Si está ocupada, el usuario entra a la cola de espera de ESA sala (FIFO).
+     *
+     * @param idSala        ID de la sala específica solicitada. Si es {@code null}, asigna cualquier sala libre.
+     * @param idUsuario     ID del usuario solicitante.
+     * @param nombreUsuario Nombre del usuario.
+     * @param duracionHoras Horas de uso solicitadas.
+     * @return La {@link SolicitudSala} creada.
+     */
+    public SolicitudSala solicitarSalaEspecifica(String idSala, String idUsuario,
+                                                 String nombreUsuario, int duracionHoras) {
+        String idSol = "RS" + String.format("%04d", contadorSolicitudesSalas++);
+        SolicitudSala solicitud = new SolicitudSala(idSol, idUsuario, nombreUsuario, duracionHoras);
+
+        // Buscar la sala específica solicitada
+        if (idSala != null) {
+            for (int i = 0; i < salas.getTamanio(); i++) {
+                SalaLectura sala = salas.obtener(i);
+                if (sala.getId().equals(idSala)) {
+                    if (!sala.isOcupada()) {
+                        sala.asignar(solicitud);
+                        logger.registrarInfo("Sala '" + sala.getNombre() + "' asignada a " + nombreUsuario);
+                    } else {
+                        sala.encolarEspera(solicitud);
+                        logger.registrarWarning("Sala '" + sala.getNombre() + "' ocupada. " +
+                                nombreUsuario + " en cola de espera (pos. " +
+                                sala.getColaEspera().getTamanio() + ")");
+                    }
+                    return solicitud;
+                }
+            }
+        }
+
+        // Si no se especificó sala o no se encontró, asignar la primera libre
+        for (int i = 0; i < salas.getTamanio(); i++) {
+            SalaLectura sala = salas.obtener(i);
+            if (!sala.isOcupada()) {
+                sala.asignar(solicitud);
+                logger.registrarInfo("Sala '" + sala.getNombre() + "' asignada a " + nombreUsuario);
+                return solicitud;
+            }
+        }
+        colaSalas.encolar(solicitud);
+        logger.registrarWarning("Todas las salas ocupadas. " + nombreUsuario + " en lista de espera general.");
+        return solicitud;
+    }
+
+    /**
+     * Libera una sala de lectura por su ID.
+     * Si hay solicitudes en espera, asigna la sala automaticamente.
+     *
+     * @param idSala ID de la sala a liberar.
+     */
+    public void liberarSala(String idSala) {
+        for (int i = 0; i < salas.getTamanio(); i++) {
+            SalaLectura sala = salas.obtener(i);
+            if (sala.getId().equals(idSala)) {
+                SolicitudSala siguiente = sala.liberar();
+                if (siguiente != null) {
+                    logger.registrarInfo("Sala " + sala.getNumero() + " reasignada a " + siguiente.getNombreUsuario());
+                } else if (!colaSalas.estaVacia()) {
+                    SolicitudSala proxima = colaSalas.desencolar();
+                    sala.asignar(proxima);
+                    logger.registrarInfo("Sala " + sala.getNumero() + " asignada desde cola general a " + proxima.getNombreUsuario());
+                } else {
+                    logger.registrarInfo("Sala " + sala.getNumero() + " liberada. Sin usuarios en espera.");
+                }
+                return;
+            }
+        }
+    }
+
+    /** @return Lista de todas las salas de lectura. */
+    public ListaEnlazada<SalaLectura> getSalas() { return salas; }
+
+    /** @return Cola de espera general para salas. */
+    public Cola<SolicitudSala> getColaSalas() { return colaSalas; }
+
+    // ══════════════════════════════════════════════════════════════
+    // MÓDULO DE COMPUTADORAS
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * Registra una computadora en el sistema. O(1).
+     *
+     * @param computadora Computadora a registrar.
+     */
+    public void registrarComputadora(Computadora computadora) {
+        computadoras.agregar(computadora);
+        logger.registrarInfo("Computadora registrada: PC-" + computadora.getNumero());
+    }
+
+    /**
+     * Solicita una computadora para un usuario.
+     * Si hay una libre, la asigna directamente.
+     * Si todas estan en uso, encola la solicitud (FIFO usando Cola).
+     *
+     * @param idUsuario       ID del usuario solicitante.
+     * @param nombreUsuario   Nombre del usuario.
+     * @param duracionMinutos Minutos de uso solicitados.
+     * @return La {@link SolicitudComputadora} creada.
+     */
+    public SolicitudComputadora solicitarComputadora(String idUsuario, String nombreUsuario, int duracionMinutos) {
+        String idSol = "RC" + String.format("%04d", contadorSolicitudesComputadoras++);
+        SolicitudComputadora solicitud = new SolicitudComputadora(idSol, idUsuario, nombreUsuario, duracionMinutos);
+
+        for (int i = 0; i < computadoras.getTamanio(); i++) {
+            Computadora pc = computadoras.obtener(i);
+            if (pc.isDisponible()) {
+                pc.asignar(solicitud);
+                logger.registrarInfo("PC-" + pc.getNumero() + " asignada a " + nombreUsuario);
+                return solicitud;
+            }
+        }
+        colaComputadoras.encolar(solicitud);
+        logger.registrarWarning("Todas las computadoras ocupadas. " + nombreUsuario + " en lista de espera.");
+        return solicitud;
+    }
+
+    /**
+     * Libera una computadora por su ID.
+     * Si hay solicitudes en cola general, asigna automaticamente la siguiente.
+     *
+     * @param idComputadora ID de la computadora a liberar.
+     */
+    public void liberarComputadora(String idComputadora) {
+        for (int i = 0; i < computadoras.getTamanio(); i++) {
+            Computadora pc = computadoras.obtener(i);
+            if (pc.getId().equals(idComputadora)) {
+                pc.liberar();
+                if (!colaComputadoras.estaVacia()) {
+                    SolicitudComputadora siguiente = colaComputadoras.desencolar();
+                    pc.asignar(siguiente);
+                    logger.registrarInfo("PC-" + pc.getNumero() + " reasignada a " + siguiente.getNombreUsuario());
+                } else {
+                    logger.registrarInfo("PC-" + pc.getNumero() + " liberada.");
+                }
+                return;
+            }
+        }
+    }
+
+    /** @return Lista de todas las computadoras. */
+    public ListaEnlazada<Computadora> getComputadoras() { return computadoras; }
+
+    /** @return Cola de espera general para computadoras. */
+    public Cola<SolicitudComputadora> getColaComputadoras() { return colaComputadoras; }
+
+    // ══════════════════════════════════════════════════════════════
+    // GETTERS GENERALES
+    // ══════════════════════════════════════════════════════════════
+
+    /** @return El catalogo BST del sistema. */
     public CatalogoBST getCatalogo() { return catalogo; }
 
     /** @return Lista de todos los usuarios registrados. */
     public ListaEnlazada<Usuario> getUsuarios() { return usuarios; }
 
-    /** @return Lista de todos los préstamos registrados. */
+    /** @return Lista de todos los prestamos registrados. */
     public ListaEnlazada<Prestamo> getPrestamos() { return prestamos; }
 }

@@ -4,6 +4,7 @@ import librosystemrr.excepciones.LibroSystemException;
 import librosystemrr.modelos.AyudanteBibliotecario;
 import librosystemrr.modelos.Bibliotecario;
 import librosystemrr.modelos.Lector;
+import librosystemrr.persistencia.GestorPersistencia;
 import librosystemrr.sistema.SistemaBiblioteca;
 
 import javax.swing.*;
@@ -24,7 +25,8 @@ public class DialogoUsuario extends JDialog {
 
     private JTextField campoId;
     private JTextField campoNombre;
-    private JTextField campoCodigo; // solo para Bibliotecario y Ayudante
+    private JTextField campoCodigo;
+    private JPasswordField campoContrasena;
 
     private boolean confirmado = false;
 
@@ -73,10 +75,16 @@ public class DialogoUsuario extends JDialog {
         campoNombre = new JTextField(15);
         formulario.add(campoNombre, gbc);
 
-        // Campo: Código de empleado (solo si no es Lector)
+        gbc.gridx = 0; gbc.gridy = 2; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+        formulario.add(new JLabel("Contrasena:"), gbc);
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        campoContrasena = new JPasswordField(15);
+        formulario.add(campoContrasena, gbc);
+
+        // Campo: Codigo de empleado (solo si no es Lector)
         if (!tipo.equals("LECTOR")) {
-            gbc.gridx = 0; gbc.gridy = 2; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-            formulario.add(new JLabel("Código de empleado:"), gbc);
+            gbc.gridx = 0; gbc.gridy = 3; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+            formulario.add(new JLabel("Codigo de empleado:"), gbc);
             gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
             campoCodigo = new JTextField(15);
             formulario.add(campoCodigo, gbc);
@@ -112,6 +120,12 @@ public class DialogoUsuario extends JDialog {
     private void guardar() {
         String id = campoId.getText().trim();
         String nombre = campoNombre.getText().trim();
+        String contrasena = new String(campoContrasena.getPassword()).trim();
+        if (contrasena.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "La contrasena es obligatoria.",
+                    "Campo incompleto", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         if (id.isEmpty() || nombre.isEmpty()) {
             JOptionPane.showMessageDialog(this,
@@ -123,7 +137,7 @@ public class DialogoUsuario extends JDialog {
         try {
             switch (tipo) {
                 case "LECTOR":
-                    sistema.registrarUsuario(new Lector(id, nombre));
+                    sistema.registrarUsuario(new Lector(id, nombre, contrasena));
                     break;
 
                 case "BIBLIOTECARIO":
@@ -131,7 +145,7 @@ public class DialogoUsuario extends JDialog {
                     if (codigoBib.isEmpty()) {
                         mostrarErrorCodigo(); return;
                     }
-                    sistema.registrarUsuario(new Bibliotecario(id, nombre, codigoBib));
+                    sistema.registrarUsuario(new Bibliotecario(id, nombre, codigoBib, contrasena));
                     break;
 
                 case "AYUDANTE":
@@ -139,10 +153,11 @@ public class DialogoUsuario extends JDialog {
                     if (codigoAy.isEmpty()) {
                         mostrarErrorCodigo(); return;
                     }
-                    sistema.registrarUsuario(new AyudanteBibliotecario(id, nombre, codigoAy));
+                    sistema.registrarUsuario(new AyudanteBibliotecario(id, nombre, codigoAy, contrasena));
                     break;
             }
 
+            GestorPersistencia.guardarActual();
             confirmado = true;
             JOptionPane.showMessageDialog(this,
                     capitalizar(tipo) + " registrado exitosamente.",

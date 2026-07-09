@@ -9,7 +9,11 @@ package librosystemrr.tads;
  *
  * @param <T> Tipo de los elementos almacenados.
  */
-public class Pila<T> {
+import java.io.Serializable;
+
+public class Pila<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Nodo en la cima de la pila. */
     private Nodo<T> tope;

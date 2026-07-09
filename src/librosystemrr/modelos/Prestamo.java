@@ -6,7 +6,11 @@ import java.util.Date;
  * Representa un préstamo de un libro a un usuario.
  * Gestiona las fechas, el estado de devolución y la multa asociada si hay retraso.
  */
-public class Prestamo {
+import java.io.Serializable;
+
+public class Prestamo implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Identificador único del préstamo. */
     private String id;
