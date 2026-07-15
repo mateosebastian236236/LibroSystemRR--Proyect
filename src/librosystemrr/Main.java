@@ -105,15 +105,6 @@ public class Main {
         sistema.registrarComputadora(new Computadora("C04", 4));
         sistema.registrarComputadora(new Computadora("C05", 5));
 
-        // Prestamos de prueba
-        try {
-            sistema.registrarPrestamo("L001", "978-0-13-110362-7");
-            sistema.registrarPrestamo("L002", "978-0-201-63361-0");
-            Prestamo vencido = sistema.registrarPrestamo("L003", "978-0-13-468599-1");
-            long veinteDias = 20L * 24 * 60 * 60 * 1000;
-            vencido.setFechaDevolucion(new Date(System.currentTimeMillis() - veinteDias));
-        } catch (Exception e) {
-            System.err.println("Error al cargar prestamos de prueba: " + e.getMessage());
-        }
+       
     }
 }
