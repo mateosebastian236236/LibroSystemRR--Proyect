@@ -167,7 +167,7 @@ public class AlgoritmosBusqueda {
     public static Usuario busquedaLinealUsuario(ListaEnlazada<Usuario> usuarios, String id) {
         for (int i = 0; i < usuarios.getTamanio(); i++) {
             Usuario u = usuarios.obtener(i);
-            if (u.getId().equals(id)) {
+            if (u.getCedula().equals(id)) {
                 return u;
             }
         }

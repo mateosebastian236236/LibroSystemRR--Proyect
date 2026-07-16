@@ -78,9 +78,10 @@ public class PanelLogin extends JDialog {
         gbc.weightx = 1.0;
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
-        formulario.add(new JLabel("Usuario (ID):"), gbc);
+        formulario.add(new JLabel("Cédula (10 dígitos):"), gbc);
         gbc.gridx = 1; gbc.weightx = 1.0;
         campoId = new JTextField(15);
+        campoId.setToolTipText("Ingresa tu número de cédula o 'admin' para acceso maestro");
         campoId.setFont(new Font("SansSerif", Font.PLAIN, 13));
         formulario.add(campoId, gbc);
 
@@ -143,11 +144,11 @@ public class PanelLogin extends JDialog {
             return;
         }
 
-        // Verificar contra usuarios registrados
+        // Verificar contra usuarios registrados por cédula
         ListaEnlazada<Usuario> usuarios = sistema.getUsuarios();
         for (int i = 0; i < usuarios.getTamanio(); i++) {
             Usuario u = usuarios.obtener(i);
-            if (u.getId().equals(id) && u.getContrasena().equals(pass)) {
+            if (u.getCedula().equals(id) && u.getContrasena().equals(pass)) {
                 loginExitoso = true;
                 usuarioAutenticado = u;
                 dispose();

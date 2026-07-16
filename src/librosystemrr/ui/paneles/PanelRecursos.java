@@ -157,13 +157,21 @@ public class PanelRecursos extends JPanel {
         if (fila < 0) { mostrarMensaje("Selecciona una sala en la tabla.", false); return; }
         String idSala = (String) modeloSalas.getValueAt(fila, 0);
 
-        String idUsuario = JOptionPane.showInputDialog(this, "ID del usuario:");
-        if (idUsuario == null || idUsuario.trim().isEmpty()) return;
+        String cedula = JOptionPane.showInputDialog(this, "Cédula del usuario (10 dígitos):");
+        if (cedula == null || cedula.trim().isEmpty()) return;
+        cedula = cedula.trim();
+        if (!cedula.matches("\\d{10}")) {
+            mostrarMensaje("La cédula debe tener exactamente 10 dígitos.", false); return;
+        }
+        String nombreUsuario;
+        try {
+            nombreUsuario = sistema.buscarUsuario(cedula).getNombre();
+        } catch (Exception e) {
+            mostrarMensaje("Cédula no encontrada: " + cedula, false); return;
+        }
+        String idUsuario = cedula;
 
-        String nombreUsuario = JOptionPane.showInputDialog(this, "Nombre del usuario:");
-        if (nombreUsuario == null || nombreUsuario.trim().isEmpty()) return;
-
-        String horasStr = JOptionPane.showInputDialog(this, "Horas de uso (1-4):", "2");
+        String horasStr = JOptionPane.showInputDialog(this, "Horas de uso (1-4):\nUsuario: " + nombreUsuario, "2");
         if (horasStr == null) return;
         int horas;
         try { horas = Integer.parseInt(horasStr.trim()); }
@@ -210,13 +218,21 @@ public class PanelRecursos extends JPanel {
         if (fila < 0) { mostrarMensaje("Selecciona una computadora en la tabla.", false); return; }
         String idComp = (String) modeloComputadoras.getValueAt(fila, 0);
 
-        String idUsuario = JOptionPane.showInputDialog(this, "ID del usuario:");
-        if (idUsuario == null || idUsuario.trim().isEmpty()) return;
+        String cedula = JOptionPane.showInputDialog(this, "Cédula del usuario (10 dígitos):");
+        if (cedula == null || cedula.trim().isEmpty()) return;
+        cedula = cedula.trim();
+        if (!cedula.matches("\\d{10}")) {
+            mostrarMensaje("La cédula debe tener exactamente 10 dígitos.", false); return;
+        }
+        String nombreUsuario;
+        try {
+            nombreUsuario = sistema.buscarUsuario(cedula).getNombre();
+        } catch (Exception e) {
+            mostrarMensaje("Cédula no encontrada: " + cedula, false); return;
+        }
+        String idUsuario = cedula;
 
-        String nombreUsuario = JOptionPane.showInputDialog(this, "Nombre del usuario:");
-        if (nombreUsuario == null || nombreUsuario.trim().isEmpty()) return;
-
-        String minsStr = JOptionPane.showInputDialog(this, "Minutos de uso (30-120):", "60");
+        String minsStr = JOptionPane.showInputDialog(this, "Minutos de uso (30-120):\nUsuario: " + nombreUsuario, "60");
         if (minsStr == null) return;
         int minutos;
         try { minutos = Integer.parseInt(minsStr.trim()); }

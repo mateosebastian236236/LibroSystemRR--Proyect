@@ -6,15 +6,14 @@ import java.io.Serializable;
 
 /**
  * Clase abstracta que representa a cualquier usuario del sistema de biblioteca.
- * Aplica el patrón Template Method: define la estructura común y delega
- * {@link #getTipo()} a las subclases.
+ * La cédula (10 dígitos) es el identificador único de cada usuario.
  */
 public abstract class Usuario implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    /** Identificador único del usuario. */
-    private String id;
+    /** Cédula de identidad (10 dígitos, única por usuario). */
+    private String cedula;
 
     /** Nombre completo del usuario. */
     private String nombre;
@@ -22,41 +21,39 @@ public abstract class Usuario implements Serializable {
     /** Contraseña de acceso al sistema. */
     private String contrasena;
 
-    /**
-     * Cola de préstamos activos (FIFO).
-     * El primer préstamo en entrar es el primero en procesarse.
-     */
+    /** Cola de préstamos activos (FIFO). */
     private Cola<Prestamo> prestamosActivos;
 
-    /**
-     * Historial de todos los préstamos realizados (LIFO).
-     * El último préstamo registrado aparece primero.
-     */
+    /** Historial de todos los préstamos realizados (LIFO). */
     private Pila<Prestamo> historialPrestamos;
 
     /**
-     * Construye un usuario con ID, nombre y contraseña.
+     * Construye un usuario con cédula, nombre y contraseña.
      *
-     * @param id         Identificador único.
+     * @param cedula     Cédula de 10 dígitos. Debe ser válida y única.
      * @param nombre     Nombre completo.
-     * @param contrasena Contraseña de acceso al sistema.
+     * @param contrasena Contraseña de acceso.
      */
-    public Usuario(String id, String nombre, String contrasena) {
-        this.id = id;
+    public Usuario(String cedula, String nombre, String contrasena) {
+        this.cedula = cedula;
         this.nombre = nombre;
         this.contrasena = contrasena;
         this.prestamosActivos = new Cola<>();
         this.historialPrestamos = new Pila<>();
     }
 
+    // ══════════════════════════════════════════
+    // VALIDACIÓN
+    // ══════════════════════════════════════════
+
     /**
-     * Construye un usuario con contraseña por defecto "1234".
+     * Valida que una cédula tenga exactamente 10 dígitos numéricos.
      *
-     * @param id     Identificador único.
-     * @param nombre Nombre completo.
+     * @param cedula Cadena a validar.
+     * @return {@code true} si es una cédula válida.
      */
-    public Usuario(String id, String nombre) {
-        this(id, nombre, "1234");
+    public static boolean esCedulaValida(String cedula) {
+        return cedula != null && cedula.matches("\\d{10}");
     }
 
     // ══════════════════════════════════════════
@@ -74,8 +71,15 @@ public abstract class Usuario implements Serializable {
     // GETTERS
     // ══════════════════════════════════════════
 
-    /** @return Identificador único del usuario. */
-    public String getId() { return id; }
+    /** @return Cédula única del usuario. */
+    public String getCedula() { return cedula; }
+
+    /**
+     * Alias de {@link #getCedula()} para compatibilidad interna.
+     *
+     * @return Cédula del usuario.
+     */
+    public String getId() { return cedula; }
 
     /** @return Nombre completo del usuario. */
     public String getNombre() { return nombre; }
@@ -91,8 +95,7 @@ public abstract class Usuario implements Serializable {
 
     @Override
     public String toString() {
-        return "Usuario{id='" + id + "', nombre='" + nombre +
-                "', tipo=" + getTipo() +
-                ", prestamosActivos=" + prestamosActivos.getTamanio() + "}";
+        return "Usuario{cedula='" + cedula + "', nombre='" + nombre +
+                "', tipo=" + getTipo() + "}";
     }
 }

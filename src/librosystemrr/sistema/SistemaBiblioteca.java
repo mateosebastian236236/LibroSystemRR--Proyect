@@ -34,7 +34,7 @@ import java.io.Serializable;
 
 public class SistemaBiblioteca implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /** Catálogo de libros organizado en BST (búsqueda O(log n) por ISBN). */
     private CatalogoBST catalogo;
@@ -142,8 +142,44 @@ public class SistemaBiblioteca implements Serializable {
      * @param usuario Usuario a registrar.
      */
     public void registrarUsuario(Usuario usuario) {
+        if (!Usuario.esCedulaValida(usuario.getCedula())) {
+            throw new IllegalArgumentException("La cedula debe tener exactamente 10 digitos numericos.");
+        }
+        for (int i = 0; i < usuarios.getTamanio(); i++) {
+            if (usuarios.obtener(i).getCedula().equals(usuario.getCedula())) {
+                throw new IllegalArgumentException("Ya existe un usuario con la cedula: " + usuario.getCedula());
+            }
+        }
         usuarios.agregar(usuario);
-        logger.registrarInfo("Usuario registrado: " + usuario.getId() + " — " + usuario.getNombre());
+        logger.registrarInfo("Usuario registrado: " + usuario.getCedula() + " — " + usuario.getNombre());
+    }
+
+    /**
+     * Busca usuarios cuyo nombre contenga el texto indicado. O(n).
+     *
+     * @param nombre Fragmento del nombre a buscar.
+     * @return Lista de usuarios que coinciden.
+     */
+    public ListaEnlazada<Usuario> buscarUsuariosPorNombre(String nombre) {
+        ListaEnlazada<Usuario> resultados = new ListaEnlazada<>();
+        String buscar = nombre.toLowerCase();
+        for (int i = 0; i < usuarios.getTamanio(); i++) {
+            Usuario u = usuarios.obtener(i);
+            if (u.getNombre().toLowerCase().contains(buscar)) {
+                resultados.agregar(u);
+            }
+        }
+        return resultados;
+    }
+
+    /**
+     * Retorna sugerencias de libros disponibles cuyo titulo contenga el texto. O(n).
+     *
+     * @param texto Fragmento del titulo a buscar.
+     * @return Lista de libros disponibles que coinciden.
+     */
+    public ListaEnlazada<Libro> buscarSugerenciasLibro(String texto) {
+        return catalogo.buscarPorTitulo(texto);
     }
 
     /**

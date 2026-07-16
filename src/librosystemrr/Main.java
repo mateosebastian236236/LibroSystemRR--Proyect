@@ -86,17 +86,17 @@ public class Main {
         sistema.registrarLibro(new Libro("978-0-13-235088-4",
                 "The Pragmatic Programmer", "David Thomas", 2019));
 
-        // Usuarios (id, nombre, contrasena)
-        sistema.registrarUsuario(new Lector("L001", "Ana Torres", "ana123"));
-        sistema.registrarUsuario(new Lector("L002", "Carlos Mendez", "carlos123"));
-        sistema.registrarUsuario(new Lector("L003", "Pedro Alvarado", "pedro123"));
-        sistema.registrarUsuario(new Bibliotecario("B001", "Maria Lopez", "EMP-2024-01", "biblio123"));
-        sistema.registrarUsuario(new AyudanteBibliotecario("A001", "Luis Paredes", "EMP-2024-02", "ayudante123"));
+        // Usuarios (cedula 10 digitos, nombre, contrasena)
+        sistema.registrarUsuario(new Lector("1723456789", "Ana Torres", "ana123"));
+        sistema.registrarUsuario(new Lector("1756789012", "Carlos Mendez", "carlos123"));
+        sistema.registrarUsuario(new Lector("1798765432", "Pedro Alvarado", "pedro123"));
+        sistema.registrarUsuario(new Bibliotecario("1701234567", "Maria Lopez", "EMP-2024-01", "biblio123"));
+        sistema.registrarUsuario(new AyudanteBibliotecario("1734567890", "Luis Paredes", "EMP-2024-02", "ayudante123"));
 
-        // Salas de lectura
-        sistema.registrarSala(new SalaLectura("S01", "Sala A - General", 10));
-        sistema.registrarSala(new SalaLectura("S02", "Sala B - Silenciosa", 6));
-        sistema.registrarSala(new SalaLectura("S03", "Sala C - Grupal", 20));
+        // Salas de lectura (max 6 personas)
+        sistema.registrarSala(new SalaLectura("S01", "Sala 1 - Individual", 2));
+        sistema.registrarSala(new SalaLectura("S02", "Sala 2 - Parejas", 4));
+        sistema.registrarSala(new SalaLectura("S03", "Sala 3 - Grupal", 6));
 
         // Computadoras
         sistema.registrarComputadora(new Computadora("C01", 1));
@@ -107,11 +107,14 @@ public class Main {
 
         // Prestamos de prueba
         try {
-            sistema.registrarPrestamo("L001", "978-0-13-110362-7");
-            sistema.registrarPrestamo("L002", "978-0-201-63361-0");
-            Prestamo vencido = sistema.registrarPrestamo("L003", "978-0-13-468599-1");
-            long veinteDias = 20L * 24 * 60 * 60 * 1000;
-            vencido.setFechaDevolucion(new Date(System.currentTimeMillis() - veinteDias));
+            sistema.registrarPrestamo("1723456789", "978-0-13-110362-7");
+            sistema.registrarPrestamo("1756789012", "978-0-201-63361-0");
+
+            // Prestamo con retraso para demostrar alertas y multas
+            Prestamo prestamoVencido = sistema.registrarPrestamo("1798765432", "978-0-13-468599-1");
+            long veinteDiasMs = 20L * 24 * 60 * 60 * 1000;
+            prestamoVencido.setFechaDevolucion(new Date(System.currentTimeMillis() - veinteDiasMs));
+
         } catch (Exception e) {
             System.err.println("Error al cargar prestamos de prueba: " + e.getMessage());
         }

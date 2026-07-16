@@ -178,33 +178,64 @@ public class PanelPrestamos extends JPanel {
         }
 
         String idPrestamo = (String) modeloTabla.getValueAt(fila, 0);
-        String multaTexto = (String) modeloTabla.getValueAt(fila, 6);
+        String estadoTexto = (String) modeloTabla.getValueAt(fila, 5);
+        String multaTexto  = (String) modeloTabla.getValueAt(fila, 6);
 
+        // Buscar el préstamo
+        librosystemrr.modelos.Prestamo prestamo = null;
+        for (int i = 0; i < sistema.getPrestamos().getTamanio(); i++) {
+            librosystemrr.modelos.Prestamo p = sistema.getPrestamos().obtener(i);
+            if (p.getId().equals(idPrestamo)) { prestamo = p; break; }
+        }
+        if (prestamo == null) return;
+
+        // Si está vencido pero aún no devuelto → procesar devolución primero (genera la multa)
+        if (prestamo.isVencido() && !prestamo.isDevuelto()) {
+            int diasRetraso = prestamo.getDiasRetraso();
+            double montoEstimado = diasRetraso * 0.50;
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Este préstamo está vencido con " + diasRetraso + " día(s) de retraso.\n" +
+                            "Multa a pagar: $" + String.format("%.2f", montoEstimado) + "\n\n" +
+                            "\u00bfRegistrar devoluci\u00f3n y pagar la multa ahora?",
+                    "Préstamo vencido", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (confirm != JOptionPane.YES_OPTION) return;
+
+            try {
+                sistema.procesarDevolucion(idPrestamo);
+                // Ahora el préstamo tiene la multa generada
+                if (prestamo.getMulta() != null) {
+                    prestamo.getMulta().pagar();
+                }
+                GestorPersistencia.guardarActual();
+                JOptionPane.showMessageDialog(this,
+                        "Devolución registrada y multa de $" + String.format("%.2f", montoEstimado) + " pagada.",
+                        "Operación exitosa", JOptionPane.INFORMATION_MESSAGE);
+                refrescar();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            return;
+        }
+
+        // Si ya fue devuelto con multa sin pagar
         if (multaTexto.equals("-")) {
-            JOptionPane.showMessageDialog(this,
-                    "Este préstamo no tiene multa asociada.",
+            JOptionPane.showMessageDialog(this, "Este préstamo no tiene multa pendiente.",
                     "Sin multa", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         if (multaTexto.contains("✔")) {
-            JOptionPane.showMessageDialog(this,
-                    "La multa de este préstamo ya fue pagada.",
+            JOptionPane.showMessageDialog(this, "La multa de este préstamo ya fue pagada.",
                     "Multa pagada", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        // Buscar el préstamo en el sistema y pagar la multa
-        for (int i = 0; i < sistema.getPrestamos().getTamanio(); i++) {
-            librosystemrr.modelos.Prestamo p = sistema.getPrestamos().obtener(i);
-            if (p.getId().equals(idPrestamo) && p.getMulta() != null && !p.getMulta().isPagada()) {
-                p.getMulta().pagar();
-                GestorPersistencia.guardarActual();
-                JOptionPane.showMessageDialog(this,
-                        "Multa de $" + String.format("%.2f", p.getMulta().getMonto()) + " pagada exitosamente.",
-                        "Pago registrado", JOptionPane.INFORMATION_MESSAGE);
-                refrescar();
-                return;
-            }
+        if (prestamo.getMulta() != null && !prestamo.getMulta().isPagada()) {
+            prestamo.getMulta().pagar();
+            GestorPersistencia.guardarActual();
+            JOptionPane.showMessageDialog(this,
+                    "Multa de $" + String.format("%.2f", prestamo.getMulta().getMonto()) + " pagada exitosamente.",
+                    "Pago registrado", JOptionPane.INFORMATION_MESSAGE);
+            refrescar();
         }
     }
 

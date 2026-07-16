@@ -187,7 +187,7 @@ public class PanelUsuarios extends JPanel {
             }
 
             modeloTabla.addRow(new Object[]{
-                    u.getId(),
+                    u.getCedula(),
                     u.getNombre(),
                     u.getTipo(),
                     prestamosActivos,
@@ -212,7 +212,7 @@ public class PanelUsuarios extends JPanel {
 
         for (int i = 0; i < usuarios.getTamanio(); i++) {
             Usuario u = usuarios.obtener(i);
-            if (u.getId().toLowerCase().contains(texto) ||
+            if (u.getCedula().toLowerCase().contains(texto) ||
                     u.getNombre().toLowerCase().contains(texto)) {
 
                 String deuda = "-";
@@ -224,7 +224,7 @@ public class PanelUsuarios extends JPanel {
                 }
 
                 modeloTabla.addRow(new Object[]{
-                        u.getId(), u.getNombre(), u.getTipo(), prestamosActivos, deuda
+                        u.getCedula(), u.getNombre(), u.getTipo(), prestamosActivos, deuda
                 });
             }
         }
@@ -241,10 +241,10 @@ public class PanelUsuarios extends JPanel {
         int fila = tablaUsuarios.getSelectedRow();
         if (fila < 0) return;
 
-        String id = (String) modeloTabla.getValueAt(fila, 0);
+        String cedula = (String) modeloTabla.getValueAt(fila, 0);
         try {
-            Usuario u = sistema.buscarUsuario(id);
-            String detalle = "ID: " + u.getId() + "  |  Nombre: " + u.getNombre() +
+            Usuario u = sistema.buscarUsuario(cedula);
+            String detalle = "Cédula: " + u.getCedula() + "  |  Nombre: " + u.getNombre() +
                     "  |  Tipo: " + u.getTipo() +
                     "  |  Historial: " + u.getHistorialPrestamos().getTamanio() + " préstamos";
             lblDetalle.setText(detalle);
